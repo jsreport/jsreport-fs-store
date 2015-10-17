@@ -11,10 +11,12 @@
     "store"
   ],
   "dependencies": {
+    "async": "^1.4.2",
     "chokidar": "^1.2.0",
     "fs-extra": "^0.24.0",
     "glob": "^5.0.15",
     "listener-collection": "0.1.0",
+    "mkdirp": "^0.5.1",
     "nedb": "^1.1.2",
     "node.extend": "^1.1.5",
     "q": "^1.4.1",

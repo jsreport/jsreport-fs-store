@@ -1,5 +1,7 @@
 #jsreport-fs-store
 
+[![Build Status](https://travis-ci.org/jsreport/jsreport-fs-store.png?branch=master)](https://travis-ci.org/jsreport/jsreport-fs-store)
+
 **[jsreport](https://github.com/jsreport/jsreport) template store extension. Supports editing templates in the external editors and browsers live reload and preview!**
 
 *Currently in preview and works just with the jsreport downloaded from the github master *
