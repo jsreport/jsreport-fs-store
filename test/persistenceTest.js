@@ -286,7 +286,7 @@ describe('persistence', function () {
     });
   });
 
-  it('loadDatabase should not crash node process and callback error when the parsing fails', function (done) {
+  it('loadDatabase should callback error when the parsing fails', function (done) {
     fs.mkdirSync(path.join(templatesPath, 'test template'));
     fs.writeFileSync(path.join(templatesPath, 'test template', 'config.json'), 'an invalid json');
 
@@ -299,6 +299,36 @@ describe('persistence', function () {
     });
   });
 
+  it('loadDatabase should ignore documents if the parent object does not exist in the config.json', function (done) {
+    persistence.persistNewState([{
+      name: 'test template',
+      html: 'kuk',
+      attr: 'foo',
+      _id: 'id',
+      phantom: {
+        header: 'header'
+      }
+    }], function (err) {
+      if (err) {
+        return done(err);
+      }
+
+      fs.writeFileSync(path.join(templatesPath, 'test template', 'config.json'), JSON.stringify({
+        name: 'test template',
+        html: 'kuk',
+        attr: 'foo',
+        _id: 'id'
+      }));
+
+      persistence.loadDatabase(function (err) {
+        if (err) {
+          return done(err);
+        }
+
+        done();
+      });
+    });
+  });
 
   function deleteFilesSync (path) {
     try {
