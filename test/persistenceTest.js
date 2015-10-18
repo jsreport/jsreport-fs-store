@@ -286,6 +286,20 @@ describe('persistence', function () {
     });
   });
 
+  it('loadDatabase should not crash node process and callback error when the parsing fails', function (done) {
+    fs.mkdirSync(path.join(templatesPath, 'test template'));
+    fs.writeFileSync(path.join(templatesPath, 'test template', 'config.json'), 'an invalid json');
+
+    persistence.loadDatabase(function (err) {
+      if (err) {
+        return done();
+      }
+
+      done('Should have failed');
+    });
+  });
+
+
   function deleteFilesSync (path) {
     try {
       var files = fs.readdirSync(path);
