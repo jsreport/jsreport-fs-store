@@ -1,6 +1,6 @@
+/* globals define */
 define(['app', 'marionette', 'backbone', 'jquery', './socket.io'],
   function (app, Marionette, Backbone, $, io) {
-
     app.onStartListeners.add(function (cb) {
       cb();
 

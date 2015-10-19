@@ -100,6 +100,30 @@ describe('persistence', function () {
     });
   });
 
+  it('public key should be excluded the config.json', function (done) {
+    persistence.persistNewState([{
+      name: 'test template',
+      html: null,
+      attr: 'foo',
+      _id: 'id'
+    }], function (err) {
+      if (err) {
+        return done(err);
+      }
+      var content = fs.readFileSync(path.join(templatesPath, 'test template', 'config.json')).toString();
+      should(JSON.parse(content).name).be.undefined();
+
+      persistence.loadDatabase(function (err) {
+        if (err) {
+          done(err);
+        }
+
+        persistence.dataByIdCache['id'].name.should.be.eql('test template');
+        done();
+      });
+    });
+  });
+
   it('persistNewState should rename directory when key changed', function (done) {
     persistence.persistNewState([{
       name: 'first',
