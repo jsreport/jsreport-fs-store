@@ -42,8 +42,8 @@ describe('persistence', function () {
       model: model,
       entitySetName: 'templates',
       entityType: model.entityTypes.TemplateType,
-      resolveFileExtension: function (doc, entitySetName, entityType, propertyName) {
-        return 'html';
+      resolveFileExtension: function (doc, entitySetName, entityType, propType) {
+        return propType.document.extension;
       }
     });
   });
@@ -349,6 +349,31 @@ describe('persistence', function () {
           return done(err);
         }
 
+        done();
+      });
+    });
+  });
+
+  it('loadDatabase should read document files with binary types', function (done) {
+    persistence.model.entityTypes.TemplateType.image = {type: 'Edm.Binary', document: {extension: 'png'}};
+    persistence.collectDocumentProperties();
+
+    persistence.persistNewState([{
+      name: 'test template',
+      html: 'kuk',
+      image: 'aaa',
+      _id: 'id'
+    }], function (err) {
+      if (err) {
+        return done(err);
+      }
+
+      persistence.loadDatabase(function (err) {
+        if (err) {
+          return done(err);
+        }
+
+        persistence.dataByIdCache['id'].image.should.be.instanceOf(Buffer);
         done();
       });
     });
