@@ -4,6 +4,13 @@ define(['app', 'marionette', 'backbone', 'jquery', './socket.io'],
     app.onStartListeners.add(function (cb) {
       cb();
 
+      var definition = app.extensions.manager.extensions.filter(function(e) {
+        return e.name === 'fs-store';
+      })[0];
+
+      if (!definition.enabled)
+        return;
+
       var lastTemplateDetail;
       app.on('toolbar-render', function (context) {
         if (context.name === 'template-detail') {
