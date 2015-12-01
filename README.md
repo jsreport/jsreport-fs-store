@@ -4,7 +4,6 @@
 
 **[jsreport](https://github.com/jsreport/jsreport) template store extension. Supports editing templates in the external editors and browsers live reload and preview!**
 
-*Currently in preview and works just with the jsreport downloaded from the github master *
 
 ##Installation
 
