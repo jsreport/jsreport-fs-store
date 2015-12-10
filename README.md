@@ -31,6 +31,13 @@ The file extension of the template content files are also adapted based on the u
 
 This storage also lets you to easily edit the template files in your favorite external text editor. Every change to the template file triggers the templates database reload on the fly. If you have also the jsreport studio open on the particular template it gets notified through sockets and refreshes and previews the template in the browser.
 
+##jsreport-core
+You can apply this extension also manually to [jsreport-core](https://github.com/jsreport/jsreport-core)
+
+```js
+var jsreport = require('jsreport-core')()
+jsreport.use(require('jsreport-jsreport-core')({ dataDirectory: '...'}))
+```
 
 ##Development
 (This section is intended to jsreport extension developers audience.)
