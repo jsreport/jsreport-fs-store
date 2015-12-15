@@ -225,8 +225,6 @@ describe('persistence', function () {
       html: 'content',
       _id: 'id'
     }, {
-      name: 'name',
-      html: 'content',
       _id: 'id',
       '$$deleted': true
     }], function (err) {

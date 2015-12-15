@@ -1,5 +1,6 @@
 var FileSystemStore = require('../lib/fsStore');
 var path = require('path');
+require('should');
 var model = {
   namespace: 'jsreport',
   entityTypes: {
