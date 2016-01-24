@@ -36,7 +36,7 @@ You can apply this extension also manually to [jsreport-core](https://github.com
 
 ```js
 var jsreport = require('jsreport-core')()
-jsreport.use(require('jsreport-jsreport-core')({ dataDirectory: '...'}))
+jsreport.use(require('jsreport-fs-store')({ dataDirectory: '...'}))
 ```
 
 ##Development
