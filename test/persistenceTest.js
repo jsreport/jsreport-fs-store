@@ -4,10 +4,6 @@ var path = require('path');
 var fs = require('fs-extra');
 var Datastore = require('nedb');
 
-process.on('uncaughtException', function (err) {
-  console.log(err);
-});
-
 describe('persistence', function () {
   var db;
   var persistence;
