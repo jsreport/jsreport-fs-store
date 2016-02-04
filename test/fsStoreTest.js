@@ -1,23 +1,26 @@
 var FileSystemStore = require('../lib/fsStore');
 var path = require('path');
+var fs = require('fs-extra');
 require('should');
+
 var model = {
   namespace: 'jsreport',
   entityTypes: {
     'UserType': {
       '_id': {'type': 'Edm.String', key: true},
-      'name': {'type': 'Edm.String'}
+      'name': {'type': 'Edm.String', publicKey:true}
     }
   },
   entitySets: {
     'users': {
-      entityType: 'jsreport.UserType'
+      entityType: 'jsreport.UserType',
+      splitIntoDirectories: true
     }
   }
 };
 
 var options = {
-  connectionString: {'name': 'fs', inMemory: true},
+  connectionString: {'name': 'fs'},
   logger: {
     info: function () {
     }, error: function () {
@@ -32,10 +35,9 @@ describe('fsStore', function () {
   var store;
 
   beforeEach(function (done) {
+    options.dataDirectory = path.join(__dirname, 'data', new Date().getTime() + '');
     store = new FileSystemStore(model, options);
     store.init().then(function () {
-      return store.drop();
-    }).then(function () {
       done();
     }).catch(done);
   });
@@ -73,6 +75,21 @@ describe('fsStore', function () {
           });
         }).catch(done);
   });
+
+  it('insert duplicated key should throw and not be included in the query', function (done) {
+    store.collection('users').insert({name: 'test'})
+        .then(function () {
+          return store.collection('users').insert({name: 'test'})
+        }).then(function () {
+          done(new Error('Should have failed'))
+        }).catch(function() {
+          return store.collection('users').find({}).then(function(res) {
+            res.should.have.length(1)
+            done()
+          })
+        }).catch(done);
+  });
+
 
   it('beforeInsertListeners should be invoked', function (done) {
     store.collection('users').beforeInsertListeners.add('test', function () {

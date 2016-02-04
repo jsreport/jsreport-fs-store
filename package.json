@@ -18,7 +18,7 @@
   "dependencies": {
     "async": "1.4.2",
     "chokidar": "1.2.0",
-    "fs-extra": "0.24.0",
+    "fs-extra": "0.26.5",
     "glob": "5.0.15",
     "listener-collection": "0.1.0",
     "mkdirp": "0.5.1",
