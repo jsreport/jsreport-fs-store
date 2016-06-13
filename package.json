@@ -1,10 +1,12 @@
 {
   "name": "jsreport-fs-store",
-  "version": "0.3.2",
+  "version": "1.0.0",
   "description": "jsreport extension adding support for storing reports on the file system",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test"
+    "test": "mocha test && standard",
+    "build": "npm run prepublish",
+    "prepublish": "in-publish && jsreport-studio-build || not-in-publish"
   },
   "homepage": "https://github.com/jsreport/jsreport-fs-store",
   "repository": {
@@ -15,24 +17,40 @@
     "jsreport",
     "store"
   ],
+  "standard": {
+    "ignore": [
+      "persistence.js",
+      "studio/main.js"
+    ],
+    "parser": "babel-eslint",
+    "env": {
+      "node": true,
+      "mocha": true,
+      "browser": true
+    }
+  },
   "dependencies": {
-    "async": "1.4.2",
-    "chokidar": "1.2.0",
-    "fs-extra": "0.26.5",
-    "glob": "5.0.15",
+    "async": "2.0.0-rc.6",
+    "chokidar": "1.5.2",
+    "fs-extra": "0.30.0",
+    "glob": "7.0.3",
+    "jsreport-studio-dev": "0.2.8",
     "listener-collection": "0.1.0",
     "mkdirp": "0.5.1",
-    "nedb": "1.1.2",
+    "nedb": "1.8.0",
     "node.extend": "1.1.5",
     "q": "1.4.1",
-    "socket.io": "1.3.7",
+    "socket.io": "1.4.6",
     "underscore": "1.8.3"
   },
   "author": "Jan Blaha",
   "devDependencies": {
-    "eslint": "^1.6.0",
-    "semistandard": "^7.0.2",
-    "mocha": "^2.3.3",
-    "should": "^7.1.0"
+    "babel-eslint": "6.0.4",
+    "eslint": "2.11.1",
+    "eslint-config-standard-jsx": "1.2.1",
+    "eslint-plugin-babel": "3.2.0",
+    "mocha": "2.5.3",
+    "should": "9.0.2",
+    "standard": "7.1.2"
   }
 }

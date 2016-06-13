@@ -28,4 +28,7 @@ node_modules
 
 .idea
 
+studio/main.js
+studio/main.js.map
+
 test/data
