@@ -29,7 +29,7 @@ This extension stores templates in the structured form easy to integrate with so
 
 The file extension of the template content files are also adapted based on the use extension. So for example the `content.html` will be changed to `content.handlebars` when the template is using handlebars engine.
 
-This storage also lets you to easily edit the template files in your favorite external text editor. Every change to the template file triggers the templates database reload on the fly. If you have also the jsreport studio open on the particular template it gets notified through sockets and refreshes and previews the template in the browser.
+This storage also lets you to easily edit the template files in your favorite external text editor. Every change to the template file triggers the templates database reload on the fly. If you have also the jsreport studio open on the particular template it gets notified through sockets and refreshes and previews the template in the browser. **This behavior is enabled only in the development environment by default, although you can override this default using `syncModifications` option.**
 
 ##jsreport-core
 You can apply this extension also manually to [jsreport-core](https://github.com/jsreport/jsreport-core)

@@ -2,7 +2,8 @@ import Studio from 'jsreport-studio'
 import io from 'socket.io-client'
 
 Studio.initializeListeners.push(() => {
-  if (!Studio.extensions['fs-store'].enabled) {
+  if (!Studio.extensions['fs-store'].options.syncModifications) {
+    console.log('sync modifications disabled', Studio.extensions['fs-store'])
     return
   }
 
