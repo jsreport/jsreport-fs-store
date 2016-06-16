@@ -89,6 +89,28 @@ describe('fsStore', function () {
       }).catch(done)
   })
 
+  it('insert doc with / in name should throw', function (done) {
+    store.collection('users').insert({ name: 'test/aaa' })
+      .then(function () {
+        done(new Error('Should have failed'))
+      }).catch(function (e) {
+        console.log(e)
+        done()
+      })
+  })
+
+  it('update doc with / in name should throw', function (done) {
+    store.collection('users').insert({ name: 'test' })
+      .then(function () {
+        return store.collection('users').update({ name: 'test' }, { $set: { name: 'test/test' } }).then(function () {
+          done(new Error('Should have failed'))
+        })
+      }).catch(function (e) {
+        console.log(e)
+        done()
+      })
+  })
+
   it('beforeInsertListeners should be invoked', function (done) {
     var beforeInsertCalled = false
     store.collection('users').beforeInsertListeners.add('test', function (doc) {
