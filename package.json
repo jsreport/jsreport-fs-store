@@ -1,6 +1,6 @@
 {
   "name": "jsreport-fs-store",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "jsreport extension adding support for storing reports on the file system",
   "main": "index.js",
   "scripts": {
@@ -30,10 +30,10 @@
     }
   },
   "dependencies": {
-    "async": "2.0.0-rc.6",
+    "async": "1.5.2",
     "chokidar": "1.5.2",
     "fs-extra": "0.30.0",
-    "glob": "7.0.3",
+    "glob": "7.0.5",
     "in-publish": "2.0.0",
     "listener-collection": "0.1.0",
     "mkdirp": "0.5.1",
@@ -45,11 +45,11 @@
   },
   "author": "Jan Blaha",
   "devDependencies": {
-    "babel-eslint": "6.0.4",
-    "eslint": "2.11.1",
+    "babel-eslint": "6.0.5",
+    "eslint": "2.13.1",
     "eslint-config-standard-jsx": "1.2.1",
     "eslint-plugin-babel": "3.2.0",
-    "jsreport-studio-dev": "0.2.8",
+    "jsreport-studio-dev": "0.3.1",
     "mocha": "2.5.3",
     "should": "9.0.2",
     "standard": "7.1.2"
