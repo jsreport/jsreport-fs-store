@@ -6,7 +6,8 @@ Studio.initializeListeners.push(() => {
     return
   }
 
-  const socket = io()
+  const socket = io({ path: Studio.resolveUrl('/socket.io') })
+
   socket.on('external-modification', async () => {
     const lastActiveEntity = Studio.getLastActiveTemplate()
     if (!lastActiveEntity) {
