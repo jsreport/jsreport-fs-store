@@ -20,6 +20,7 @@
   "standard": {
     "ignore": [
       "persistence.js",
+      "deepCopy.js",
       "studio/main.js"
     ],
     "parser": "babel-eslint",
