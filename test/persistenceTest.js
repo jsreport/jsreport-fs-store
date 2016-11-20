@@ -373,6 +373,40 @@ describe('persistence', function () {
     })
   })
 
+  it('loadDatabase should ignore OSX .DS_Store files in templates path', function (done) {
+    fs.writeFileSync(path.join(templatesPath, '.DS_Store'), 'test content')
+
+    persistence.loadDatabase(function (err) {
+      if (err) {
+        return done(err)
+      }
+
+      done()
+    })
+  })
+
+  it('loadDatabase should ignore OSX .DS_Store files in template directory', function (done) {
+    persistence.persistNewState([{
+      name: 'name',
+      html: 'content',
+      _id: 'id'
+    }], function (err) {
+      if (err) {
+        return done(err)
+      }
+
+      fs.writeFileSync(path.join(templatesPath, 'name', '.DS_Store'), 'test content')
+
+      persistence.loadDatabase(function (err) {
+        if (err) {
+          return done(err)
+        }
+
+        done()
+      })
+    })
+  })
+
   function deleteFilesSync (path) {
     try {
       var files = fs.readdirSync(path)
