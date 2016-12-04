@@ -45,7 +45,7 @@ describe('persistence', function () {
   })
 
   afterEach(function () {
-    persistence.watcher.close()
+    persistence.watcher && persistence.watcher.close()
   })
 
   it('should work on empty database', function (done) {
