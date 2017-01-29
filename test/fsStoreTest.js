@@ -21,11 +21,10 @@ var model = {
 var options = {
   connectionString: { 'name': 'fs' },
   logger: {
-    info: function () {
-    }, error: function () {
-    }, warn: function () {
-    }, debug: function () {
-    }
+    info: function () { },
+    error: function () { },
+    warn: function () { },
+    debug: function () { }
   },
   dataDirectory: path.join(__dirname, 'data')
 }

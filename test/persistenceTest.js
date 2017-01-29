@@ -31,7 +31,8 @@ describe('persistence', function () {
 
     db = new Datastore({
       filename: path.join(dataPath, 'templates'),
-      autoload: false, inMemoryOnly: false
+      autoload: false,
+      inMemoryOnly: false
     })
     persistence = new Persistence({
       db: db,
