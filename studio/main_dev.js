@@ -20,4 +20,3 @@ Studio.initializeListeners.push(() => {
     Studio.preview()
   })
 })
-

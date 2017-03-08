@@ -119,7 +119,7 @@ describe('fsStore', function () {
     store.collection('users').insert({ name: 'user1' })
       .then(function () {
         return store.collection('users').find({ name: 'user1' }).then(function () {
-          beforeInsertCalled.should.be.ok
+          beforeInsertCalled.should.be.ok()
           done()
         })
       }).catch(done)
@@ -132,7 +132,7 @@ describe('fsStore', function () {
     })
 
     store.collection('users').find({ name: 'user2' }).then(function () {
-      beforeFindCalled.should.be.ok
+      beforeFindCalled.should.be.ok()
       done()
     }).catch(done)
   })
@@ -144,7 +144,7 @@ describe('fsStore', function () {
     })
 
     store.collection('users').remove({ name: 'test' }).then(function () {
-      beforeRemoveCalled.should.be.ok
+      beforeRemoveCalled.should.be.ok()
       done()
     }).catch(done)
   })
@@ -156,9 +156,8 @@ describe('fsStore', function () {
     })
 
     store.collection('users').update({ name: 'test' }, { $set: { name: 'test2' } }).then(function () {
-      beforeUpdateCalled.should.be.ok
+      beforeUpdateCalled.should.be.ok()
       done()
     }).catch(done)
   })
 })
-

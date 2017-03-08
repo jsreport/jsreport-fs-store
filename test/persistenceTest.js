@@ -73,7 +73,7 @@ describe('persistence', function () {
       var configjs = fs.readFileSync(path.join(templatesPath, 'test template', 'config.json'))
       var config = JSON.parse(configjs)
       config.attr.should.be.eql('foo')
-      should(config.html).not.be.ok
+      should(config.html).not.be.ok()
 
       var content = fs.readFileSync(path.join(templatesPath, 'test template', 'html.html')).toString()
       content.should.be.eql('kuk')
@@ -424,7 +424,6 @@ describe('persistence', function () {
       }
       fs.rmdirSync(path)
     } catch (e) {
-      return
     }
   }
 })
