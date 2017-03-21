@@ -63,7 +63,7 @@ var templateAttributes = {
 };
 ```
 
-### ngines
+### Engines
 
 Engines like handlebars or jade are able to override the default file extension for the template content files. This can be done using file extension resolver....
 ```js
