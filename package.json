@@ -1,6 +1,6 @@
 {
   "name": "jsreport-fs-store",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "jsreport extension adding support for storing reports on the file system",
   "main": "index.js",
   "scripts": {
