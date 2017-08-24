@@ -1,11 +1,11 @@
-#jsreport-fs-store
+# jsreport-fs-store
 [![NPM Version](http://img.shields.io/npm/v/jsreport-fs-store.svg?style=flat-square)](https://npmjs.com/package/jsreport-fs-store)
 [![Build Status](https://travis-ci.org/jsreport/jsreport-fs-store.png?branch=master)](https://travis-ci.org/jsreport/jsreport-fs-store)
 
 **[jsreport](https://github.com/jsreport/jsreport) template store extension. Supports editing templates in the external editors and browsers live reload and preview!**
 
 
-##Installation
+## Installation
 
 > npm install jsreport-fs-store
 
@@ -18,7 +18,7 @@ Then alter jsreport configuration
 
 You should delete the old `data` when using this for the first time.
 
-##Features
+## Features
 This extension stores templates in the structured form easy to integrate with source controls.
 
 > data \ templates
@@ -31,7 +31,7 @@ The file extension of the template content files are also adapted based on the u
 
 This storage also lets you to easily edit the template files in your favorite external text editor. Every change to the template file triggers the templates database reload on the fly. If you have also the jsreport studio open on the particular template it gets notified through sockets and refreshes and previews the template in the browser. **This behavior is enabled only in the development environment by default, although you can override this default using `syncModifications` option.**
 
-##jsreport-core
+## jsreport-core
 You can apply this extension also manually to [jsreport-core](https://github.com/jsreport/jsreport-core)
 
 ```js
@@ -39,10 +39,10 @@ var jsreport = require('jsreport-core')()
 jsreport.use(require('jsreport-fs-store')({ dataDirectory: '...', syncModifications: true }))
 ```
 
-##Development
+## Development
 (This section is intended to jsreport extension developers audience.)
 
-###Entity definitions
+### Entity definitions
 Use `splitIntoDirectories` attribute in `registerEntitySet` to use the directory structure for storing. Otherwise the storage will put every entity row into the one single file.
 ```js
 this.documentStore.registerEntitySet("templates", {entityType: "jsreport.TemplateType", splitIntoDirectories: true});
@@ -63,7 +63,7 @@ var templateAttributes = {
 };
 ```
 
-###Engines
+### Engines
 
 Engines like handlebars or jade are able to override the default file extension for the template content files. This can be done using file extension resolver....
 ```js
