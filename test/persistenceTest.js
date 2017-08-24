@@ -374,6 +374,27 @@ describe('persistence', function () {
     })
   })
 
+  it('loadDatabase should read document files also if template name contains wildcard charachters', function (done) {
+    persistence.persistNewState([{
+      name: '[foo] template',
+      html: 'kuk',
+      _id: 'id'
+    }], function (err) {
+      if (err) {
+        return done(err)
+      }
+
+      persistence.loadDatabase(function (err) {
+        if (err) {
+          return done(err)
+        }
+
+        persistence.dataByIdCache['id'].html.should.be.eql('kuk')
+        done()
+      })
+    })
+  })
+
   it('loadDatabase should ignore OSX .DS_Store files in templates path', function (done) {
     fs.writeFileSync(path.join(templatesPath, '.DS_Store'), 'test content')
 
