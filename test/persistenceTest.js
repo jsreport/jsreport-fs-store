@@ -12,9 +12,15 @@ describe('persistence', function () {
 
   var model = {
     namespace: 'jsreport',
+    complexTypes: {
+      PhantomType: {
+        'header': { 'type': 'Edm.String', document: { extension: 'html' } }
+      }
+    },
     entityTypes: {
       'TemplateType': {
         '_id': { 'type': 'Edm.String', key: true },
+        'phantom': { 'type': 'jsreport.PhantomType' },
         'name': { 'type': 'Edm.String', publicKey: true },
         'html': { 'type': 'Edm.String', document: { extension: 'html' } }
       }
@@ -390,6 +396,27 @@ describe('persistence', function () {
         }
 
         persistence.dataByIdCache['id'].html.should.be.eql('kuk')
+        done()
+      })
+    })
+  })
+
+  it('loadDatabase should read document files also for nested complex object', function (done) {
+    persistence.persistNewState([{
+      name: '[foo] template',
+      phantom: {'header': 'foo'},
+      _id: 'id'
+    }], function (err) {
+      if (err) {
+        return done(err)
+      }
+
+      persistence.loadDatabase(function (err) {
+        if (err) {
+          return done(err)
+        }
+
+        persistence.dataByIdCache['id'].phantom.header.should.be.eql('foo')
         done()
       })
     })
