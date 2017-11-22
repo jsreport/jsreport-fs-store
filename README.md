@@ -1,3 +1,3 @@
 # jsreport-fs-store
 
-The preview of the next version of jsreport default fily system tempaltes store.
+The preview of the next version of jsreport default file system tempaltes store.
