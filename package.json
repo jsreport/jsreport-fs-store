@@ -34,8 +34,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "chokidar": "1.7.0",
-    "jsreport-templates": "1.2.1",
+    "chokidar": "1.7.0",    
     "lockfile": "1.0.3",
     "lodash.omit": "4.5.0",
     "mingo": "2.0.4",
@@ -54,6 +53,7 @@
     "jsreport-core": "1.5.1",
     "jsreport-express": "1.2.4",
     "jsreport-studio-dev": "1.1.1",
+    "jsreport-templates": "1.2.1",
     "mocha": "4.0.1",
     "ncp": "2.0.0",
     "rimraf": "2.6.2",
