@@ -1,477 +1,83 @@
-var should = require('should')
-var Persistence = require('../lib/persistence.js')
-var path = require('path')
-var fs = require('fs-extra')
-var Datastore = require('nedb')
+const path = require('path')
+const Persistence = require('../lib/persistence')
+const DocumentModel = require('../lib/documentModel')
+const sinon = require('sinon')
+require('should-sinon')
+require('should')
 
-describe('persistence', function () {
-  var db
-  var persistence
-  var dataPath = path.join(__dirname, 'data')
-  var templatesPath = path.join(dataPath, 'templates')
-
-  var model = {
-    namespace: 'jsreport',
-    complexTypes: {
-      PhantomType: {
-        'header': { 'type': 'Edm.String', document: { extension: 'html' } }
-      }
-    },
-    entityTypes: {
-      'TemplateType': {
-        '_id': { 'type': 'Edm.String', key: true },
-        'phantom': { 'type': 'jsreport.PhantomType' },
-        'name': { 'type': 'Edm.String', publicKey: true },
-        'html': { 'type': 'Edm.String', document: { extension: 'html' } }
-      }
-    },
-    entitySets: {
-      'templates': {
-        entityType: 'jsreport.TemplateType'
-      }
+const model = {
+  namespace: 'jsreport',
+  entitySets: {
+    templates: {
+      entityType: 'jsreport.TemplateType',
+      splitIntoDirectories: true
+    }
+  },
+  entityTypes: {
+    TemplateType: {
+      _id: { type: 'Edm.String', key: true },
+      name: { type: 'Edm.String', publicKey: true },
+      shortid: { type: 'Edm.String' }
     }
   }
+}
 
-  beforeEach(function () {
-    deleteFilesSync(dataPath)
+describe('persistence', () => {
+  let persistence
+  let fs
 
-    db = new Datastore({
-      filename: path.join(dataPath, 'templates'),
-      autoload: false,
-      inMemoryOnly: false
-    })
-    persistence = new Persistence({
-      db: db,
-      model: model,
-      entitySetName: 'templates',
-      entityType: model.entityTypes.TemplateType,
-      resolveFileExtension: function (doc, entitySetName, entityType, propType) {
-        return propType.document.extension
-      }
-    })
-  })
-
-  afterEach(function () {
-    persistence.watcher && persistence.watcher.close()
-  })
-
-  it('should work on empty database', function (done) {
-    persistence.loadDatabase(function (err) {
-      if (err) {
-        return done(err)
-      }
-
-      done()
-    })
-  })
-
-  it('persistNewState should correctly write config.json and document files', function (done) {
-    persistence.persistNewState([{
-      name: 'test template',
-      html: 'kuk',
-      attr: 'foo',
-      _id: 'id'
-    }], function (err) {
-      if (err) {
-        return done(err)
-      }
-
-      var configjs = fs.readFileSync(path.join(templatesPath, 'test template', 'config.json'))
-      var config = JSON.parse(configjs)
-      config.attr.should.be.eql('foo')
-      should(config.html).not.be.ok()
-
-      var content = fs.readFileSync(path.join(templatesPath, 'test template', 'html.html')).toString()
-      content.should.be.eql('kuk')
-      done()
-    })
-  })
-
-  it('persistNewState should write empty string for null or undefined document property', function (done) {
-    persistence.persistNewState([{
-      name: 'test template',
-      html: null,
-      attr: 'foo',
-      _id: 'id'
-    }], function (err) {
-      if (err) {
-        return done(err)
-      }
-      var content = fs.readFileSync(path.join(templatesPath, 'test template', 'html.html')).toString()
-      content.should.be.eql('')
-      done()
-    })
-  })
-
-  it('public key should be excluded the config.json', function (done) {
-    persistence.persistNewState([{
-      name: 'test template',
-      html: null,
-      attr: 'foo',
-      _id: 'id'
-    }], function (err) {
-      if (err) {
-        return done(err)
-      }
-      var content = fs.readFileSync(path.join(templatesPath, 'test template', 'config.json')).toString()
-      should(JSON.parse(content).name).be.undefined()
-
-      persistence.loadDatabase(function (err) {
-        if (err) {
-          done(err)
-        }
-
-        persistence.dataByIdCache['id'].name.should.be.eql('test template')
-        done()
-      })
-    })
-  })
-
-  it('persistNewState should rename directory when key changed', function (done) {
-    persistence.persistNewState([{
-      name: 'first',
-      _id: 'id'
-    }], function (err) {
-      if (err) {
-        return done(err)
-      }
-
-      persistence.persistNewState([{
-        name: 'changed',
-        _id: 'id'
-      }], function (err) {
-        if (err) {
-          return done(err)
-        }
-
-        fs.existsSync(path.join(templatesPath, 'changed')).should.be.eql(true)
-        fs.existsSync(path.join(templatesPath, 'first')).should.be.eql(false)
-        done()
-      })
-    })
-  })
-
-  it('loadDatabase shouldLoad persisted state', function (done) {
-    persistence.persistNewState([{
-      name: 'name',
-      html: 'content',
-      _id: 'id'
-    }], function () {
-      persistence.loadDatabase(function (err) {
-        if (err) {
-          return done(err)
-        }
-
-        persistence.dataByIdCache['id'].html.should.be.eql('content')
-
-        done()
-      })
-    })
-  })
-
-  it('should dynamically resolve file extensions when persisting', function (done) {
-    persistence.resolveFileExtension = function (doc, entityType) {
-      return 'foo'
+  beforeEach(async () => {
+    fs = {
+      init: sinon.mock(),
+      load: sinon.mock(),
+      stat: sinon.mock(),
+      insert: sinon.mock(),
+      update: sinon.mock(),
+      remove: sinon.mock(),
+      readdir: sinon.mock(),
+      mkdir: sinon.mock(),
+      rename: sinon.mock(),
+      readFile: sinon.mock(),
+      writeFile: sinon.mock(),
+      lock: sinon.mock(),
+      releaseLock: sinon.mock(),
+      path: path
     }
-
-    persistence.persistNewState([{
-      name: 'name',
-      html: 'content',
-      _id: 'id'
-    }], function (err) {
-      if (err) {
-        return done(err)
-      }
-
-      fs.existsSync(path.join(templatesPath, 'name', 'html.foo')).should.be.eql(true)
-      done()
-    })
+    persistence = Persistence({ documentsModel: DocumentModel(model), fs: fs })
   })
 
-  it('should delete file with old file extension when changed', function (done) {
-    persistence.resolveFileExtension = function (doc, entityType) {
-      return doc.html
-    }
-
-    persistence.persistNewState([{
-      name: 'name',
-      html: 'a',
-      _id: 'id'
-    }], function (err) {
-      if (err) {
-        return done(err)
-      }
-
-      persistence.persistNewState([{
-        name: 'name',
-        html: 'b',
-        _id: 'id'
-      }], function (err) {
-        if (err) {
-          return done(err)
-        }
-
-        fs.existsSync(path.join(templatesPath, 'name', 'html.b')).should.be.eql(true)
-        fs.existsSync(path.join(templatesPath, 'name', 'html.a')).should.be.eql(false)
-        done()
-      })
-    })
+  afterEach(async () => {
   })
 
-  it('persistNewState should delete the folder when state $$$delete', function (done) {
-    persistence.resolveFileExtension = function (doc, entityType) {
-      return 'foo'
-    }
-
-    persistence.persistNewState([{
-      name: 'name',
-      html: 'content',
-      _id: 'id'
-    }, {
-      _id: 'id',
-      '$$deleted': true
-    }], function (err) {
-      if (err) {
-        return done(err)
-      }
-
-      fs.existsSync(path.join(templatesPath, 'name', 'html.foo')).should.be.eql(false)
-      done()
-    })
+  it('should call fs.init on load', async () => {
+    fs.readdir.twice()
+    fs.readdir.returns([])
+    await persistence.load()
   })
 
-  it('persistNewState should callback error when inserting duplicate public key', function (done) {
-    persistence.resolveFileExtension = function (doc, entityType) {
-      return 'foo'
-    }
-
-    persistence.persistNewState([{
-      name: 'name',
-      html: 'content',
-      _id: 'id'
-    }, {
-      name: 'name',
-      html: 'content',
-      _id: 'id2'
-    }], function (err) {
-      if (err) {
-        return done()
-      }
-
-      done(new Error('Public key uniqueness error should be thrown'))
-    })
+  it('should call fs.remove on remove', async () => {
+    await persistence.remove({$entitySet: 'templates', name: 'foo'})
+    fs.remove.should.be.calledWith(path.join('templates', 'foo'))
   })
 
-  it('should watch for changes and reload if required', function (done) {
-    persistence.treshold = 50
-    persistence.persistNewState([{
-      name: 'name',
-      html: 'content',
-      _id: 'id'
-    }], function (err) {
-      if (err) {
-        return done(err)
-      }
-
-      setTimeout(function () {
-        fs.writeFileSync(path.join(templatesPath, 'name', 'html.html'), 'another')
-      }, 50)
-
-      setTimeout(function () {
-        persistence.dataByIdCache['id'].html.should.be.eql('another')
-        done()
-      }, 200)
-    })
+  it('should use crash safe approach to update doc', async () => {
+    fs.rename.twice()
+    await persistence.update({$entitySet: 'templates', name: 'foo', shortid: 'a'}, {$entitySet: 'templates', name: 'foo', shortid: 'b'})
+    fs.mkdir.should.be.calledWith(path.join('templates', '~~foo~foo'))
+    fs.writeFile.should.be.calledWith(path.join('templates', '~~foo~foo', 'config.json'), JSON.stringify({$entitySet: 'templates', name: 'foo', shortid: 'a'}, null, 4))
+    fs.rename.should.be.calledWith(path.join('templates', '~foo~foo'), path.join('templates', 'foo'))
+    fs.rename.should.be.calledWith(path.join('templates', '~~foo~foo'), path.join('templates', '~foo~foo'))
   })
 
-  it('persistNewState should write document files also for the nested properties', function (done) {
-    persistence.model.entityTypes.TemplateType.phantom = { type: 'jsreport.PhantomType' }
-    persistence.model.complexTypes = {
-      PhantomType: {
-        header: { type: 'Edm.String', document: { extension: 'html' } }
-      }
-    }
-    persistence.collectDocumentProperties()
-
-    persistence.persistNewState([{
-      name: 'test template',
-      html: 'kuk',
-      attr: 'foo',
-      _id: 'id',
-      phantom: {
-        header: 'header'
-      }
-    }], function (err) {
-      if (err) {
-        return done(err)
-      }
-
-      fs.existsSync(path.join(templatesPath, 'test template', 'header.html')).should.be.eql(true)
-      done()
+  it('should remove inconsistent folders on load', async () => {
+    fs.stat.twice()
+    fs.readdir.twice()
+    fs.readdir.returns(['~~foo~foo'])
+    fs.stat.returns({
+      isDirectory: () => true,
+      isFile: () => false
     })
+    await persistence.load()
+    fs.remove.should.be.calledWith('~~foo~foo')
   })
-
-  it('loadDatabase should callback error when the parsing fails', function (done) {
-    fs.mkdirSync(path.join(templatesPath, 'test template'))
-    fs.writeFileSync(path.join(templatesPath, 'test template', 'config.json'), 'an invalid json')
-
-    persistence.loadDatabase(function (err) {
-      if (err) {
-        return done()
-      }
-
-      done('Should have failed')
-    })
-  })
-
-  it('loadDatabase should ignore documents if the parent object does not exist in the config.json', function (done) {
-    persistence.persistNewState([{
-      name: 'test template',
-      html: 'kuk',
-      attr: 'foo',
-      _id: 'id',
-      phantom: {
-        header: 'header'
-      }
-    }], function (err) {
-      if (err) {
-        return done(err)
-      }
-
-      fs.writeFileSync(path.join(templatesPath, 'test template', 'config.json'), JSON.stringify({
-        name: 'test template',
-        html: 'kuk',
-        attr: 'foo',
-        _id: 'id'
-      }))
-
-      persistence.loadDatabase(function (err) {
-        if (err) {
-          return done(err)
-        }
-
-        done()
-      })
-    })
-  })
-
-  it('loadDatabase should read document files with binary types', function (done) {
-    persistence.model.entityTypes.TemplateType.image = { type: 'Edm.Binary', document: { extension: 'png' } }
-    persistence.collectDocumentProperties()
-
-    persistence.persistNewState([{
-      name: 'test template',
-      html: 'kuk',
-      image: 'aaa',
-      _id: 'id'
-    }], function (err) {
-      if (err) {
-        return done(err)
-      }
-
-      persistence.loadDatabase(function (err) {
-        if (err) {
-          return done(err)
-        }
-
-        persistence.dataByIdCache['id'].image.should.be.instanceOf(Buffer)
-        done()
-      })
-    })
-  })
-
-  it('loadDatabase should read document files also if template name contains wildcard charachters', function (done) {
-    persistence.persistNewState([{
-      name: '[foo] template',
-      html: 'kuk',
-      _id: 'id'
-    }], function (err) {
-      if (err) {
-        return done(err)
-      }
-
-      persistence.loadDatabase(function (err) {
-        if (err) {
-          return done(err)
-        }
-
-        persistence.dataByIdCache['id'].html.should.be.eql('kuk')
-        done()
-      })
-    })
-  })
-
-  it('loadDatabase should read document files also for nested complex object', function (done) {
-    persistence.persistNewState([{
-      name: '[foo] template',
-      phantom: {'header': 'foo'},
-      _id: 'id'
-    }], function (err) {
-      if (err) {
-        return done(err)
-      }
-
-      persistence.loadDatabase(function (err) {
-        if (err) {
-          return done(err)
-        }
-
-        persistence.dataByIdCache['id'].phantom.header.should.be.eql('foo')
-        done()
-      })
-    })
-  })
-
-  it('loadDatabase should ignore OSX .DS_Store files in templates path', function (done) {
-    fs.writeFileSync(path.join(templatesPath, '.DS_Store'), 'test content')
-
-    persistence.loadDatabase(function (err) {
-      if (err) {
-        return done(err)
-      }
-
-      done()
-    })
-  })
-
-  it('loadDatabase should ignore OSX .DS_Store files in template directory', function (done) {
-    persistence.persistNewState([{
-      name: 'name',
-      html: 'content',
-      _id: 'id'
-    }], function (err) {
-      if (err) {
-        return done(err)
-      }
-
-      fs.writeFileSync(path.join(templatesPath, 'name', '.DS_Store'), 'test content')
-
-      persistence.loadDatabase(function (err) {
-        if (err) {
-          return done(err)
-        }
-
-        done()
-      })
-    })
-  })
-
-  function deleteFilesSync (path) {
-    try {
-      var files = fs.readdirSync(path)
-
-      if (files.length > 0) {
-        for (var i = 0; i < files.length; i++) {
-          var filePath = path + '/' + files[i]
-          if (fs.statSync(filePath).isFile()) {
-            fs.unlinkSync(filePath)
-          } else {
-            deleteFilesSync(filePath)
-          }
-        }
-      }
-      fs.rmdirSync(path)
-    } catch (e) {
-    }
-  }
 })
