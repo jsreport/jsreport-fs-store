@@ -251,8 +251,19 @@ describe('provider', () => {
           e.action.should.be.eql('reload')
           resolve()
         })
-        store.provider.sync.tresholdForSkippingOwnProcessWrites = 0
+        store.provider.sync.tresholdForSkippingOwnProcessWrites = 1
         fs.writeFileSync(path.join(tmpData, 'templates', 'test', 'config.json'), JSON.stringify({ $entitySet: 'templates', name: 'test', recipe: Date.now() }))
+      })
+    })
+
+    it('should not fire reload event for recent changes', async () => {
+      await store.collection('templates').insert({ name: 'test', recipe: 'foo' })
+
+      let notified = false
+      store.provider.sync.subscribe((e) => (notified = true))
+      fs.writeFileSync(path.join(tmpData, 'templates', 'test', 'config.json'), JSON.stringify({ $entitySet: 'templates', name: 'test', recipe: Date.now() }))
+      return Promise.delay(200).then(() => {
+        notified.should.be.false()
       })
     })
   })
