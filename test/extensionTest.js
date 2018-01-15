@@ -13,7 +13,7 @@ describe('extension use', () => {
   })
 
   afterEach(() => {
-    jsreport.documentStore.provider.sync.stop()
+    jsreport.close()
   })
 
   it('should be able apply fs store without connectionString just with jsreport.use', () => {
@@ -27,14 +27,14 @@ describe('extension discovery', () => {
   beforeEach(() => {
     jsreport = JsReport({
       discover: true,
-      extensions: ['fs-store-2'],
+      extensions: ['fs-store'],
       rootDirectory: path.join(__dirname, '../'),
-      connectionString: { name: 'fs2' }
+      connectionString: { name: 'fs' }
     })
     return jsreport.init()
   })
 
-  afterEach(() => jsreport.documentStore.provider.sync.stop())
+  afterEach(() => jsreport.close())
 
   it('should find and apply fs store', () => {
     jsreport.documentStore.provider.name.should.be.eql('fs')
@@ -47,7 +47,7 @@ describe('extension disabled through connectionString', () => {
   beforeEach(() => {
     jsreport = JsReport({
       discover: true,
-      extensions: ['fs-store-2'],
+      extensions: ['fs-store'],
       connectionString: { name: 'memory' },
       rootDirectory: path.join(__dirname, '../')
     })
@@ -71,7 +71,7 @@ describe('extension sockets', () => {
   })
 
   afterEach(() => {
-    jsreport.documentStore.provider.sync.stop()
+    jsreport.close()
     jsreport.express.server.close()
     io.close()
   })

@@ -1,5 +1,5 @@
 module.exports = {
-  'name': 'fs-store-2',
+  'name': 'fs-store',
   'main': 'lib/main.js',
   'dependencies': [ 'templates' ]
 }

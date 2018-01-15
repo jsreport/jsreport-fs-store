@@ -1,4 +1,4 @@
-const DocumentStore = require('../lib/documentStore')
+const DocumentStore = require('jsreport-core/lib/store/documentStore.js')
 const Provider = require('../lib/provider')
 const path = require('path')
 const Promise = require('bluebird')
@@ -17,7 +17,8 @@ function createDefaultStore () {
       error: () => { },
       warn: () => { },
       debug: () => { }
-    }
+    },
+    connectionString: {}
   })
 
   store.registerComplexType('PhantomType', {
@@ -67,7 +68,7 @@ describe('provider', () => {
   })
 
   afterEach(() => {
-    store.provider.sync.stop()
+    store.provider.close()
     return rimrafAsync(tmpData)
   })
 
@@ -270,7 +271,7 @@ describe('provider', () => {
 
   describe('queueing', () => {
     // otherwise we get queuing called from the sync reload action
-    beforeEach(() => store.provider.sync.stop())
+    beforeEach(() => store.provider.close())
 
     it('insert should go to queue', async () => {
       store.provider.queue = sinon.mock()
@@ -302,7 +303,7 @@ describe('provider', () => {
 
   describe('syncing', () => {
     // stop default monitoring and use mocks instead
-    beforeEach(() => store.provider.sync.stop())
+    beforeEach(() => store.provider.close())
 
     it('insert should publish event', async () => {
       store.provider.sync.publish = sinon.spy()
@@ -445,7 +446,7 @@ describe('load', () => {
   })
 
   afterEach(() => {
-    store.provider.sync.stop()
+    store.provider.close()
   })
 
   it('should load templates splitted into folder', async () => {
@@ -487,7 +488,7 @@ describe('load cleanup', () => {
 
   afterEach(async () => {
     await rimrafAsync(path.join(__dirname, 'dataToCleanupCopy'))
-    store.provider.sync.stop()
+    store.provider.close()
   })
 
   it('should load commited changes ~c~c', async () => {
