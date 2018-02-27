@@ -12,9 +12,7 @@ describe('extension use', () => {
     return jsreport.init()
   })
 
-  afterEach(() => {
-    jsreport.close()
-  })
+  afterEach(() => jsreport.close())
 
   it('should be able apply fs store without connectionString just with jsreport.use', () => {
     jsreport.documentStore.provider.name.should.be.eql('fs')
@@ -54,6 +52,8 @@ describe('extension disabled through connectionString', () => {
     return jsreport.init()
   })
 
+  afterEach(() => jsreport.close())
+
   it('should find and apply fs store', () => {
     should(jsreport.documentStore.provider.name).not.be.eql('fs')
   })
@@ -64,6 +64,7 @@ describe('extension sockets', () => {
   let io
 
   beforeEach(() => {
+    io = IO('http://localhost:3000')
     jsreport = JsReport()
     jsreport.use(require('jsreport-express')({ httpPort: 3000 }))
     jsreport.use(require('../')({ syncModifications: true }))
@@ -76,8 +77,6 @@ describe('extension sockets', () => {
   })
 
   it('should emit sockets', (done) => {
-    io = IO('http://localhost:3000')
-
     io.on('connect', () => jsreport.documentStore.provider.emit('external-modification'))
 
     io.on('external-modification', () => done())
