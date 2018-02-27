@@ -1,5 +1,5 @@
 const DocumentStore = require('jsreport-core/lib/store/documentStore.js')
-const coreStoreTests = require('jsreport-core').tests.documentStore
+const coreStoreTests = require('jsreport-core').tests.documentStore()
 const Provider = require('../lib/provider')
 const path = require('path')
 const Promise = require('bluebird')
@@ -53,6 +53,28 @@ function createDefaultStore () {
   return store
 }
 
+describe('common core tests', () => {
+  let store
+  const tmpData = path.join(__dirname, 'tmpData')
+  let resolveFileExtension
+
+  beforeEach(async () => {
+    resolveFileExtension = () => null
+    await rimrafAsync(tmpData)
+
+    store = createDefaultStore()
+    store.registerProvider(Provider({ dataDirectory: tmpData, logger: store.options.logger }))
+    store.addFileExtensionResolver(() => resolveFileExtension())
+  })
+
+  afterEach(() => {
+    store.provider.close()
+    return rimrafAsync(tmpData)
+  })
+
+  coreStoreTests(() => store)
+})
+
 describe('provider', () => {
   let store
   const tmpData = path.join(__dirname, 'tmpData')
@@ -71,10 +93,6 @@ describe('provider', () => {
   afterEach(() => {
     store.provider.close()
     return rimrafAsync(tmpData)
-  })
-
-  describe('common core tests', () => {
-    coreStoreTests()(() => store)
   })
 
   describe('basic', () => {
