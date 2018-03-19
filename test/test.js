@@ -427,4 +427,8 @@ describe('load cleanup', () => {
   it('should remove commited and renamed changes', () => {
     fs.existsSync(path.join(__dirname, 'dataToCleanupCopy', 'templates', '~c~c')).should.be.false()
   })
+
+  it('should compact flat files on load', () => {
+    fs.readFileSync(path.join(__dirname, 'dataToCleanupCopy', 'settings'), 'utf8').should.not.containEql('\n')
+  })
 })

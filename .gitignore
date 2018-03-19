@@ -39,3 +39,4 @@ node_modules
 logs
 dev.config.json
 prod.config.json
+.vscode
