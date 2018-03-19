@@ -429,6 +429,6 @@ describe('load cleanup', () => {
   })
 
   it('should compact flat files on load', () => {
-    fs.readFileSync(path.join(__dirname, 'dataToCleanupCopy', 'settings'), 'utf8').should.not.containEql('\n')
+    fs.readFileSync(path.join(__dirname, 'dataToCleanupCopy', 'settings'), 'utf8').should.not.containEql(`"value":"1"`)
   })
 })
