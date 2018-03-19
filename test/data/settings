@@ -1,5 +1,2 @@
-{"key":"a","value":"0","_id":"AqjU7dgGxwZ0WJ82"}
-{"key":"b","value":"2","_id":"BqjU7dgGxwZ0WJ82"}
-{"key":"c","value":"3","_id":"CqjU7dgGxwZ0WJ82"}
-{"key":"a","value":"1","_id":"AqjU7dgGxwZ0WJ82"}
-{ "$$deleted": true,"_id":"CqjU7dgGxwZ0WJ82"}
+{"key":"a","value":"1","_id":"AqjU7dgGxwZ0WJ82","$entitySet":"settings"}
+{"key":"b","value":"2","_id":"BqjU7dgGxwZ0WJ82","$entitySet":"settings"}
