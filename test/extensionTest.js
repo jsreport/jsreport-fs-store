@@ -14,7 +14,7 @@ describe('extension use', () => {
 
   afterEach(() => jsreport.close())
 
-  it('should be able apply fs store without connectionString just with jsreport.use', () => {
+  it('should be able apply fs store without store option just with jsreport.use', () => {
     jsreport.documentStore.provider.name.should.be.eql('fs')
   })
 })
@@ -25,9 +25,9 @@ describe('extension discovery', () => {
   beforeEach(() => {
     jsreport = JsReport({
       discover: true,
-      extensions: ['fs-store'],
+      extensionsList: ['fs-store'],
       rootDirectory: path.join(__dirname, '../'),
-      connectionString: { name: 'fs' }
+      store: { provider: 'fs' }
     })
     return jsreport.init()
   })
@@ -39,14 +39,14 @@ describe('extension discovery', () => {
   })
 }).timeout(10000)
 
-describe('extension disabled through connectionString', () => {
+describe('extension disabled through store', () => {
   let jsreport
 
   beforeEach(() => {
     jsreport = JsReport({
       discover: true,
-      extensions: ['fs-store'],
-      connectionString: { name: 'memory' },
+      extensionsList: ['fs-store'],
+      store: { provider: 'memory' },
       rootDirectory: path.join(__dirname, '../')
     })
     return jsreport.init()
