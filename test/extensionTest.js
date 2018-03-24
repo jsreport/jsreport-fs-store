@@ -7,7 +7,7 @@ describe('extension use', () => {
   let jsreport
 
   beforeEach(() => {
-    jsreport = JsReport()
+    jsreport = JsReport({ store: { provider: 'fs' } })
     jsreport.use(require('../')())
     return jsreport.init()
   })
@@ -65,7 +65,7 @@ describe('extension sockets', () => {
 
   beforeEach(() => {
     io = IO('http://localhost:3000')
-    jsreport = JsReport()
+    jsreport = JsReport({ store: { provider: 'fs' } })
     jsreport.use(require('jsreport-express')({ httpPort: 3000 }))
     jsreport.use(require('../')({ syncModifications: true }))
     return jsreport.init()

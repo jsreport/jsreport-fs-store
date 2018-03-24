@@ -18,8 +18,7 @@ function createDefaultStore () {
       error: () => { },
       warn: () => { },
       debug: () => { }
-    },
-    connectionString: {}
+    }
   })
 
   store.registerComplexType('PhantomType', {
