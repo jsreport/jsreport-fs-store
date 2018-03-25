@@ -8,7 +8,7 @@ const ncpAsync = Promise.promisify(require('ncp').ncp)
 const sinon = require('sinon')
 Promise.promisifyAll(fs)
 const rimrafAsync = Promise.promisify(require('rimraf'))
-require('should')
+const should = require('should')
 require('should-sinon')
 
 function createDefaultStore () {
@@ -122,6 +122,12 @@ describe('provider', () => {
       await store.collection('templates').insert({ name: 'test', content: 'foo' })
       const content = (await fs.readFileAsync(path.join(tmpData, 'templates', 'test', 'content.txt'))).toString()
       content.should.be.eql('foo')
+    })
+
+    it('should not be duplicated in the config file', async () => {
+      await store.collection('templates').insert({ name: 'test', content: 'foo' })
+      const config = JSON.parse((await fs.readFileAsync(path.join(tmpData, 'templates', 'test', 'config.json'))).toString())
+      should(config.content).not.be.ok()
     })
   })
 
