@@ -108,6 +108,12 @@ describe('provider', () => {
       const res = await store.collection('templates').find({ name: 'test2' })
       res.length.should.be.eql(1)
     })
+
+    it('insert should use the _id from input', async () => {
+      await store.collection('templates').insert({ name: 'test', _id: 'foo' })
+      const res = await store.collection('templates').findOne({ name: 'test' })
+      res._id.should.be.eql('foo')
+    })
   })
 
   describe('document properties', () => {
