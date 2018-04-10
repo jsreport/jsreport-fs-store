@@ -114,6 +114,12 @@ describe('provider', () => {
       const res = await store.collection('templates').findOne({ name: 'test' })
       res._id.should.be.eql('foo')
     })
+
+    it('find should exclude $entitySet from result', async () => {
+      await store.collection('templates').insert({ name: 'test', _id: 'foo' })
+      const res = await store.collection('templates').findOne({ name: 'test' })
+      should(res.$entitySet).not.be.ok()
+    })
   })
 
   describe('document properties', () => {
