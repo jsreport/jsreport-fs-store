@@ -29,10 +29,11 @@ describe('extension discovery', () => {
       rootDirectory: path.join(__dirname, '../'),
       store: { provider: 'fs' }
     })
+
     return jsreport.init()
   })
 
-  afterEach(() => jsreport.close())
+  afterEach(() => jsreport && jsreport.close())
 
   it('should find and apply fs store', () => {
     jsreport.documentStore.provider.name.should.be.eql('fs')
