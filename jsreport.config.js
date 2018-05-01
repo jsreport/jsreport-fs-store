@@ -19,13 +19,13 @@ module.exports = {
           sync: {
             type: 'object',
             properties: {
-              name: { type: 'string' }
+              provider: { type: 'string' }
             }
           },
           persistence: {
             type: 'object',
             properties: {
-              name: { type: 'string' }
+              provider: { type: 'string' }
             }
           }
         }
