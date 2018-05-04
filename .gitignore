@@ -1,6 +1,8 @@
 # Logs
 logs
 *.log
+npm-debug.log
+npm-debug.log.*
 
 # Runtime data
 pids
@@ -28,7 +30,13 @@ node_modules
 
 .idea
 
-studio/main.js
-studio/main.js.map
+# temporary include build to git
+# studio/main.js
+# studio/main.js.map
 
-test/data
+# jsreport files
+/data
+logs
+dev.config.json
+prod.config.json
+.vscode
