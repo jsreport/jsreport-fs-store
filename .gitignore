@@ -30,9 +30,8 @@ node_modules
 
 .idea
 
-# temporary include build to git
-# studio/main.js
-# studio/main.js.map
+studio/main.js
+studio/main.js.map
 
 # jsreport files
 /data
