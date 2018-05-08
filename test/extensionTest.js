@@ -22,7 +22,7 @@ describe('extension use', () => {
 describe('extension discovery', () => {
   let jsreport
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jsreport = JsReport({
       discover: true,
       extensionsList: ['fs-store'],
@@ -30,10 +30,14 @@ describe('extension discovery', () => {
       store: { provider: 'fs' }
     })
 
-    return jsreport.init()
+    await jsreport.init()
   })
 
-  afterEach(() => jsreport && jsreport.close())
+  afterEach(async () => {
+    if (jsreport) {
+      await jsreport.close()
+    }
+  })
 
   it('should find and apply fs store', () => {
     jsreport.documentStore.provider.name.should.be.eql('fs')
