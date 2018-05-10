@@ -1,12 +1,16 @@
 const jsreport = require('jsreport-core')({
-  connectionString: {
-    name: 'fs2',
-    dataDirectory: require('path').join(__dirname, 'data')
+  store: {
+    provider: 'fs'
   },
   logger: {
     'console': { 'transport': 'console', 'level': 'debug' }
   },
-  httpPort: 5488
+  httpPort: 5488,
+  extensions: {
+    'fs-store': {
+      dataDirectory: require('path').join(__dirname, 'data')
+    }
+  }
 })
 
 jsreport.use(require('jsreport-authentication')())
