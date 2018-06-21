@@ -62,7 +62,13 @@ describe('common core tests', () => {
     await rimrafAsync(tmpData)
 
     store = createDefaultStore()
-    store.registerProvider(Provider({ dataDirectory: tmpData, logger: store.options.logger }))
+
+    store.registerProvider(Provider({
+      dataDirectory: tmpData,
+      logger: store.options.logger,
+      syncModifications: true
+    }))
+
     store.addFileExtensionResolver(() => resolveFileExtension())
   })
 

@@ -19,7 +19,8 @@ module.exports = {
           sync: {
             type: 'object',
             properties: {
-              provider: { type: 'string' }
+              provider: { type: 'string' },
+              usePolling: { type: 'boolean', default: true }
             }
           },
           persistence: {
