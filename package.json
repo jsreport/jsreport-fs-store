@@ -51,7 +51,7 @@
     "eslint-config-standard-jsx": "5.0.0",
     "eslint-plugin-babel": "5.1.0",
     "in-publish": "2.0.0",
-    "jsreport-core": "2.0.3",
+    "jsreport-core": "2.0.4",
     "jsreport-express": "2.1.1",
     "jsreport-studio-dev": "1.1.2",
     "jsreport-templates": "2.0.0",
