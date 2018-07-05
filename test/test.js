@@ -147,6 +147,18 @@ describe('provider', () => {
       const config = JSON.parse((await fs.readFileAsync(path.join(tmpData, 'templates', 'test', 'config.json'))).toString())
       should(config.content).not.be.ok()
     })
+
+    it('should not write dedicated files is prop not defined', async () => {
+      await store.collection('templates').insert({ name: 'test', content: 'foo' })
+      fs.existsSync(path.join(tmpData, 'templates', 'test', 'header.html')).should.be.false()
+    })
+
+    it('should delete dedicated files for null set', async () => {
+      await store.collection('templates').insert({ name: 'test', content: 'foo', phantom: { header: 'a' } })
+      fs.existsSync(path.join(tmpData, 'templates', 'test', 'header.html')).should.be.true()
+      await store.collection('templates').update({ name: 'test' }, { $set: { phantom: null } })
+      fs.existsSync(path.join(tmpData, 'templates', 'test', 'header.html')).should.be.false()
+    })
   })
 
   describe('validations', () => {
