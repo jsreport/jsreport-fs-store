@@ -326,6 +326,17 @@ describe('provider', () => {
       templates[0].name.should.be.eql('foo')
     })
 
+    it('subscribed update event should insert doc if not found', async () => {
+      const doc = { _id: 'a', name: 'a', $entitySet: 'templates' }
+      await store.provider.sync.subscription({
+        action: 'update',
+        doc: doc
+      })
+      const templates = await store.collection('templates').find({ _id: doc._id })
+      templates.should.have.length(1)
+      templates[0].name.should.be.eql('a')
+    })
+
     it('subscribed remove event should remove doc', async () => {
       const doc = await store.collection('templates').insert({ name: 'test' })
       await store.provider.sync.subscription({
