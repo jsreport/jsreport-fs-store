@@ -16,6 +16,7 @@ module.exports = {
           syncModifications: { type: 'boolean' },
           dataDirectory: { type: 'string' },
           compactionInterval: { type: 'number' },
+          corruptAlertThreshold: { type: 'number' },
           sync: {
             type: 'object',
             properties: {

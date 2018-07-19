@@ -11,6 +11,10 @@ const model = {
     templates: {
       entityType: 'jsreport.TemplateType',
       splitIntoDirectories: true
+    },
+    reports: {
+      entityType: 'jsreport.ReportType',
+      splitIntoDirectories: false
     }
   },
   entityTypes: {
@@ -18,6 +22,10 @@ const model = {
       _id: { type: 'Edm.String', key: true },
       name: { type: 'Edm.String', publicKey: true },
       shortid: { type: 'Edm.String' }
+    },
+    ReportType: {
+      _id: { type: 'Edm.String', key: true },
+      name: { type: 'Edm.String', publicKey: true }
     }
   }
 }
@@ -32,12 +40,14 @@ describe('persistence', () => {
       load: sinon.mock(),
       stat: sinon.mock(),
       insert: sinon.mock(),
+      exists: sinon.mock(),
       update: sinon.mock(),
       remove: sinon.mock(),
       readdir: sinon.mock(),
       mkdir: sinon.mock(),
       rename: sinon.mock(),
       readFile: sinon.mock(),
+      appendFile: sinon.mock(),
       writeFile: sinon.mock(),
       lock: sinon.mock(),
       releaseLock: sinon.mock(),
@@ -67,6 +77,13 @@ describe('persistence', () => {
     fs.writeFile.should.be.calledWith(path.join('templates', '~~foo~foo', 'config.json'), JSON.stringify({$entitySet: 'templates', name: 'foo', shortid: 'a'}, null, 4))
     fs.rename.should.be.calledWith(path.join('templates', '~foo~foo'), path.join('templates', 'foo'))
     fs.rename.should.be.calledWith(path.join('templates', '~~foo~foo'), path.join('templates', '~foo~foo'))
+  })
+
+  it('compact should crash safe approach', async () => {
+    const documents = { reports: [ { name: 'a' } ] }
+    await persistence.compact(documents)
+    fs.writeFile.should.be.calledWith('~reports', JSON.stringify({name: 'a'}) + '\n')
+    fs.rename.should.be.calledWith('~reports', 'reports')
   })
 
   it('should remove inconsistent folders on load', async () => {
