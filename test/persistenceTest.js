@@ -66,15 +66,15 @@ describe('persistence', () => {
   })
 
   it('should call fs.remove on remove', async () => {
-    await persistence.remove({$entitySet: 'templates', name: 'foo'})
+    await persistence.remove({ $entitySet: 'templates', name: 'foo' })
     fs.remove.should.be.calledWith(path.join('templates', 'foo'))
   })
 
   it('should use crash safe approach to update doc', async () => {
     fs.rename.twice()
-    await persistence.update({$entitySet: 'templates', name: 'foo', shortid: 'a'}, {$entitySet: 'templates', name: 'foo', shortid: 'b'})
+    await persistence.update({ $entitySet: 'templates', name: 'foo', shortid: 'a' }, { $entitySet: 'templates', name: 'foo', shortid: 'b' })
     fs.mkdir.should.be.calledWith(path.join('templates', '~~foo~foo'))
-    fs.writeFile.should.be.calledWith(path.join('templates', '~~foo~foo', 'config.json'), JSON.stringify({$entitySet: 'templates', name: 'foo', shortid: 'a'}, null, 4))
+    fs.writeFile.should.be.calledWith(path.join('templates', '~~foo~foo', 'config.json'), JSON.stringify({ $entitySet: 'templates', name: 'foo', shortid: 'a' }, null, 4))
     fs.rename.should.be.calledWith(path.join('templates', '~foo~foo'), path.join('templates', 'foo'))
     fs.rename.should.be.calledWith(path.join('templates', '~~foo~foo'), path.join('templates', '~foo~foo'))
   })
@@ -82,7 +82,7 @@ describe('persistence', () => {
   it('compact should crash safe approach', async () => {
     const documents = { reports: [ { name: 'a' } ] }
     await persistence.compact(documents)
-    fs.writeFile.should.be.calledWith('~reports', JSON.stringify({name: 'a'}) + '\n')
+    fs.writeFile.should.be.calledWith('~reports', JSON.stringify({ name: 'a' }) + '\n')
     fs.rename.should.be.calledWith('~reports', 'reports')
   })
 
