@@ -27,7 +27,15 @@ module.exports = {
           persistence: {
             type: 'object',
             properties: {
-              provider: { type: 'string' }
+              provider: { type: 'string' },
+              lock: {
+                type: 'object',
+                properties: {
+                  stale: { type: 'number', default: 5000 },
+                  retries: { type: 'number', default: 100 },
+                  retryWait: { type: 'number', default: 100 }
+                }
+              }
             }
           }
         }

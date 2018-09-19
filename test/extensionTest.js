@@ -78,7 +78,7 @@ describe('extension sockets', () => {
 
   afterEach(() => {
     io.close()
-    jsreport.close()
+    return jsreport.close()
   })
 
   it('should emit sockets', (done) => {
