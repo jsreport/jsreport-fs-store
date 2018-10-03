@@ -87,8 +87,8 @@ describe('common core tests', () => {
     store.addFileExtensionResolver(() => resolveFileExtension())
   })
 
-  afterEach(() => {
-    store.provider.close()
+  afterEach(async () => {
+    await store.provider.close()
     return rimrafAsync(tmpData)
   })
 
@@ -110,8 +110,8 @@ describe('provider', () => {
     await store.init()
   })
 
-  afterEach(() => {
-    store.provider.close()
+  afterEach(async () => {
+    await store.provider.close()
     return rimrafAsync(tmpData)
   })
 
@@ -190,6 +190,15 @@ describe('provider', () => {
       await store.collection('templates').insert({ name: 'foo', shortid: 'foo', folder: { shortid: 'c' } })
       await store.collection('templates').remove({ name: 'foo' })
       fs.existsSync(path.join(tmpData, 'a', 'b', 'c', 'foo')).should.be.false()
+    })
+
+    it('update meta readonly asset', async () => {
+      await store.provider.close()
+      fs.writeFileSync(path.join(tmpData, 'foo.txt'), 'foo')
+      await store.init()
+      await store.collection('assets').update({ name: 'foo.txt' }, { $set: { content: Buffer.from('hello') } })
+      fs.readFileSync(path.join(tmpData, 'foo.txt')).toString().should.be.eql('hello')
+      fs.existsSync(path.join(tmpData, 'assets')).should.be.false()
     })
   })
 
@@ -479,7 +488,7 @@ describe('load', () => {
   })
 
   afterEach(() => {
-    store.provider.close()
+    return store.provider.close()
   })
 
   it('should load templates splitted into folder', async () => {
@@ -502,20 +511,26 @@ describe('load', () => {
   })
 
   it('should load assets binary content', async () => {
-    const res = await store.collection('assets').find({})
+    const res = await store.collection('assets').find({ name: 'image.png' })
     res.should.have.length(1)
     res[0].content.should.be.instanceof(Buffer)
   })
 
   it('should load folders as entities', async () => {
     const res = await store.collection('folders').find({})
-    res.should.have.length(2)
+    res.should.have.length(3)
     const assets = res.find((r) => r.name === 'assets')
     assets.should.be.ok()
     assets.shortid.should.be.eql('1jpybw')
 
     const invoice = await store.collection('templates').findOne({})
     invoice.folder.shortid.should.be.eql('Q4EEHA')
+  })
+
+  it('should load random files as assets', async () => {
+    const res = await store.collection('assets').findOne({ name: 'random/test.txt' })
+    res.content.should.be.instanceof(Buffer)
+    res.isMetaReadOnly.should.be.true()
   })
 })
 
@@ -532,7 +547,7 @@ describe('load cleanup', () => {
 
   afterEach(async () => {
     await rimrafAsync(path.join(__dirname, 'dataToCleanupCopy'))
-    store.provider.close()
+    return store.provider.close()
   })
 
   it('should load commited changes ~c~c', async () => {
