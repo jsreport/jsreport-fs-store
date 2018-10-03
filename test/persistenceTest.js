@@ -15,17 +15,32 @@ const model = {
     reports: {
       entityType: 'jsreport.ReportType',
       splitIntoDirectories: false
+    },
+    folders: {
+      entityType: 'jsreport.FolderType',
+      splitIntoDirectories: false
     }
   },
   entityTypes: {
     TemplateType: {
       _id: { type: 'Edm.String', key: true },
       name: { type: 'Edm.String', publicKey: true },
-      shortid: { type: 'Edm.String' }
+      shortid: { type: 'Edm.String' },
+      folder: { type: 'jsreport.FolderRefType' }
     },
     ReportType: {
       _id: { type: 'Edm.String', key: true },
       name: { type: 'Edm.String', publicKey: true }
+    },
+    FolderType: {
+      _id: { type: 'Edm.String', key: true },
+      name: { type: 'Edm.String', publicKey: true },
+      shortid: { type: 'Edm.String' }
+    }
+  },
+  complexTypes: {
+    FolderRefType: {
+      shortid: { type: 'Edm.String' }
     }
   }
 }

@@ -21,6 +21,18 @@ function createDefaultStore () {
     }
   })
 
+  store.registerEntityType('FolderType', {
+    _id: { type: 'Edm.String', key: true },
+    name: { type: 'Edm.String', publicKey: true },
+    shortid: { type: 'Edm.String' },
+    creationDate: { type: 'Edm.DateTimeOffset' },
+    modificationDate: { type: 'Edm.DateTimeOffset' }
+  })
+
+  store.registerComplexType('FolderRefType', {
+    shortid: { type: 'Edm.String' }
+  })
+
   store.registerComplexType('PhantomType', {
     margin: { type: 'Edm.String' },
     header: { type: 'Edm.String', document: { extension: 'html', engine: true } }
@@ -31,14 +43,16 @@ function createDefaultStore () {
     content: { type: 'Edm.String', document: { extension: 'html', engine: true } },
     recipe: { type: 'Edm.String' },
     modificationDate: { type: 'Edm.DateTimeOffset' },
-    phantom: { type: 'jsreport.PhantomType' }
+    phantom: { type: 'jsreport.PhantomType' },
+    folder: { type: 'jsreport.FolderRefType' }
   })
   store.registerEntitySet('templates', { entityType: 'jsreport.TemplateType', splitIntoDirectories: true })
 
   store.registerEntityType('AssetType', {
     _id: { type: 'Edm.String', key: true },
     name: { type: 'Edm.String', publicKey: true },
-    content: { type: 'Edm.Binary', document: { extension: 'html', content: true } }
+    content: { type: 'Edm.Binary', document: { extension: 'html', content: true } },
+    folder: { type: 'jsreport.FolderRefType' }
   })
   store.registerEntitySet('assets', { entityType: 'jsreport.AssetType', splitIntoDirectories: true })
 
@@ -48,6 +62,7 @@ function createDefaultStore () {
     value: { type: 'Edm.String' }
   })
   store.registerEntitySet('settings', { entityType: 'jsreport.SettingsType' })
+  store.registerEntitySet('folders', { entityType: 'jsreport.FolderType', splitIntoDirectories: true })
 
   return store
 }
@@ -125,6 +140,56 @@ describe('provider', () => {
       await store.collection('templates').insert({ name: 'test', _id: 'foo' })
       const res = await store.collection('templates').findOne({ name: 'test' })
       should(res.$entitySet).not.be.ok()
+    })
+  })
+
+  describe('folders', () => {
+    it('insert folder should create new directory on top', async () => {
+      await store.collection('folders').insert({ name: 'test' })
+      fs.existsSync(path.join(tmpData, 'test')).should.be.true()
+    })
+
+    it('insert folder and nested entity should create nested new directory', async () => {
+      await store.collection('folders').insert({ name: 'test', shortid: 'test' })
+      await store.collection('templates').insert({ name: 'foo', engine: 'none', recipe: 'html', folder: { shortid: 'test' } })
+      fs.existsSync(path.join(tmpData, 'test')).should.be.true()
+      fs.existsSync(path.join(tmpData, 'test', 'foo')).should.be.true()
+    })
+
+    it('update folder name', async () => {
+      await store.collection('folders').insert({ name: 'test', shortid: 'test' })
+      await store.collection('folders').update({ name: 'test' }, { $set: { name: 'foo' } })
+      fs.existsSync(path.join(tmpData, 'foo')).should.be.true()
+      fs.existsSync(path.join(tmpData, 'test')).should.be.false()
+    })
+
+    it('deep nested folders and entities', async () => {
+      await store.collection('folders').insert({ name: 'a', shortid: 'a' })
+      await store.collection('folders').insert({ name: 'b', shortid: 'b', folder: { shortid: 'a' } })
+      await store.collection('folders').insert({ name: 'c', shortid: 'c', folder: { shortid: 'b' } })
+      await store.collection('templates').insert({ name: 'foo', shortid: 'foo', folder: { shortid: 'c' } })
+      fs.existsSync(path.join(tmpData, 'a', 'b', 'c', 'foo')).should.be.true()
+    })
+
+    it('should create config.json when creating new folders', async () => {
+      await store.collection('folders').insert({ name: 'a', shortid: 'a' })
+      fs.existsSync(path.join(tmpData, 'a', 'config.json')).should.be.true()
+    })
+
+    it('update folder name should not remove the nested entities', async () => {
+      await store.collection('folders').insert({ name: 'test', shortid: 'test' })
+      await store.collection('templates').insert({ name: 'tmpl', engine: 'none', recipe: 'html', folder: { shortid: 'test' } })
+      await store.collection('folders').update({ name: 'test' }, { $set: { name: 'foo' } })
+      fs.existsSync(path.join(tmpData, 'foo', 'tmpl')).should.be.true()
+    })
+
+    it('remove whole nested folder with entities', async () => {
+      await store.collection('folders').insert({ name: 'a', shortid: 'a' })
+      await store.collection('folders').insert({ name: 'b', shortid: 'b', folder: { shortid: 'a' } })
+      await store.collection('folders').insert({ name: 'c', shortid: 'c', folder: { shortid: 'b' } })
+      await store.collection('templates').insert({ name: 'foo', shortid: 'foo', folder: { shortid: 'c' } })
+      await store.collection('templates').remove({ name: 'foo' })
+      fs.existsSync(path.join(tmpData, 'a', 'b', 'c', 'foo')).should.be.false()
     })
   })
 
@@ -440,6 +505,17 @@ describe('load', () => {
     const res = await store.collection('assets').find({})
     res.should.have.length(1)
     res[0].content.should.be.instanceof(Buffer)
+  })
+
+  it('should load folders as entities', async () => {
+    const res = await store.collection('folders').find({})
+    res.should.have.length(2)
+    const assets = res.find((r) => r.name === 'assets')
+    assets.should.be.ok()
+    assets.shortid.should.be.eql('1jpybw')
+
+    const invoice = await store.collection('templates').findOne({})
+    invoice.folder.shortid.should.be.eql('Q4EEHA')
   })
 })
 
