@@ -532,6 +532,11 @@ describe('load', () => {
     res.content.should.be.instanceof(Buffer)
     res.isMetaReadOnly.should.be.true()
   })
+
+  it('should not load folder config.json as asset', async () => {
+    const res = await store.collection('assets').findOne({ name: 'random/config.json' })
+    should(res).be.null()
+  })
 })
 
 describe('load cleanup', () => {
