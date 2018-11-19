@@ -171,6 +171,14 @@ describe('provider', () => {
       fs.existsSync(path.join(tmpData, 'a', 'b', 'c', 'foo')).should.be.true()
     })
 
+    it('rename folder with entities', async () => {
+      await store.collection('folders').insert({ name: 'a', shortid: 'a' })
+      await store.collection('templates').insert({ name: 'c', shortid: 'c', folder: { shortid: 'a' } })
+      await store.collection('folders').update({ name: 'a' }, { $set: { name: 'renamed' } })
+      const template = JSON.parse(fs.readFileSync(path.join(tmpData, 'renamed', 'c', 'config.json')))
+      template.name.should.be.eql('c')
+    })
+
     it('should create config.json when creating new folders', async () => {
       await store.collection('folders').insert({ name: 'a', shortid: 'a' })
       fs.existsSync(path.join(tmpData, 'a', 'config.json')).should.be.true()
