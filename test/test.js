@@ -29,6 +29,10 @@ function createDefaultStore () {
     modificationDate: { type: 'Edm.DateTimeOffset' }
   })
 
+  store.registerComplexType('ScriptType', {
+    name: { type: 'Edm.String', publicKey: true }
+  })
+
   store.registerComplexType('FolderRefType', {
     shortid: { type: 'Edm.String' }
   })
@@ -44,7 +48,8 @@ function createDefaultStore () {
     recipe: { type: 'Edm.String' },
     modificationDate: { type: 'Edm.DateTimeOffset' },
     phantom: { type: 'jsreport.PhantomType' },
-    folder: { type: 'jsreport.FolderRefType' }
+    folder: { type: 'jsreport.FolderRefType' },
+    scripts: { type: 'Collection(jsreport.ScriptType)' }
   })
   store.registerEntitySet('templates', { entityType: 'jsreport.TemplateType', splitIntoDirectories: true })
 
@@ -140,6 +145,13 @@ describe('provider', () => {
       await store.collection('templates').insert({ name: 'test', _id: 'foo' })
       const res = await store.collection('templates').findOne({ name: 'test' })
       should(res.$entitySet).not.be.ok()
+    })
+
+    it('updating arrays', async () => {
+      await store.collection('templates').insert({ name: 'test', _id: 'foo', scripts: [{ name: 'foo' }] })
+      await store.collection('templates').update({ name: 'test' }, { $set: { scripts: [] } })
+      const template = JSON.parse(fs.readFileSync(path.join(tmpData, 'templates', 'test', 'config.json')))
+      template.scripts.should.have.length(0)
     })
   })
 

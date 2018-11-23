@@ -39,7 +39,7 @@
     "lodash.omit": "4.5.0",
     "mingo": "2.2.4",
     "mkdirp": "0.5.1",
-    "node.extend": "2.0.0",
+    "node.extend.without.arrays": "1.1.5",
     "rimraf": "2.6.2",
     "socket.io": "2.1.1",
     "uuid": "3.3.2"
