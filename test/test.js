@@ -548,9 +548,10 @@ describe('load', () => {
   })
 
   it('should load random files as assets', async () => {
-    const res = await store.collection('assets').findOne({ name: 'random/test.txt' })
+    const res = await store.collection('assets').findOne({ name: 'test.txt' })
     res.content.should.be.instanceof(Buffer)
     res.isMetaReadOnly.should.be.true()
+    res.folder.should.be.ok()
   })
 
   it('should not load folder config.json as asset', async () => {
