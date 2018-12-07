@@ -34,6 +34,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "bluebird": "3.5.3",
     "chokidar": "2.0.4",
     "lockfile": "1.0.4",
     "lodash.isequal": "4.5.0",
