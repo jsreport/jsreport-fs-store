@@ -36,6 +36,7 @@
   "dependencies": {
     "chokidar": "2.0.4",
     "lockfile": "1.0.4",
+    "lodash.isequal": "4.5.0",
     "lodash.omit": "4.5.0",
     "mingo": "2.2.4",
     "mkdirp": "0.5.1",

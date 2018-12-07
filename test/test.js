@@ -11,6 +11,13 @@ const rimrafAsync = Promise.promisify(require('rimraf'))
 const should = require('should')
 require('should-sinon')
 
+const AssetType = {
+  _id: { type: 'Edm.String', key: true },
+  name: { type: 'Edm.String', publicKey: true },
+  content: { type: 'Edm.Binary', document: { extension: 'html', content: true } },
+  folder: { type: 'jsreport.FolderRefType' }
+}
+
 function createDefaultStore () {
   const store = DocumentStore({
     logger: {
@@ -53,12 +60,7 @@ function createDefaultStore () {
   })
   store.registerEntitySet('templates', { entityType: 'jsreport.TemplateType', splitIntoDirectories: true })
 
-  store.registerEntityType('AssetType', {
-    _id: { type: 'Edm.String', key: true },
-    name: { type: 'Edm.String', publicKey: true },
-    content: { type: 'Edm.Binary', document: { extension: 'html', content: true } },
-    folder: { type: 'jsreport.FolderRefType' }
-  })
+  store.registerEntityType('AssetType', AssetType)
   store.registerEntitySet('assets', { entityType: 'jsreport.AssetType', splitIntoDirectories: true })
 
   store.registerEntityType('SettingsType', {
@@ -86,7 +88,9 @@ describe('common core tests', () => {
     store.registerProvider(Provider({
       dataDirectory: tmpData,
       logger: store.options.logger,
-      syncModifications: true
+      syncModifications: true,
+      createError: (m) => new Error(m),
+      AssetType
     }))
 
     store.addFileExtensionResolver(() => resolveFileExtension())
@@ -110,7 +114,12 @@ describe('provider', () => {
     await rimrafAsync(tmpData)
 
     store = createDefaultStore()
-    store.registerProvider(Provider({ dataDirectory: tmpData, logger: store.options.logger }))
+    store.registerProvider(Provider({
+      dataDirectory: tmpData,
+      logger: store.options.logger,
+      createError: (m) => new Error(m),
+      AssetType
+    }))
     store.addFileExtensionResolver(() => resolveFileExtension())
     await store.init()
   })
@@ -503,7 +512,12 @@ describe('load', () => {
 
   beforeEach(async () => {
     store = createDefaultStore()
-    store.registerProvider(Provider({ dataDirectory: path.join(__dirname, 'data'), logger: store.options.logger }))
+    store.registerProvider(Provider({
+      dataDirectory: path.join(__dirname, 'data'),
+      logger: store.options.logger,
+      createError: (m) => new Error(m),
+      AssetType
+    }))
     await store.init()
   })
 
@@ -558,6 +572,16 @@ describe('load', () => {
     const res = await store.collection('assets').findOne({ name: 'random/config.json' })
     should(res).be.null()
   })
+
+  it('should fail when updating isMetaReadOnly asset ', async () => {
+    await store.collection('assets').findOne({ name: 'test.txt' })
+    return store.collection('assets').update({ name: 'test.txt' }, { $set: { folder: { shortid: 'foo' } } }).should.be.rejected()
+  })
+
+  it('should not fail when updating content of isMetaReadOnly asset ', async () => {
+    await store.collection('assets').findOne({ name: 'test.txt' })
+    return store.collection('assets').update({ name: 'test.txt' }, { $set: { content: 'foo' } })
+  })
 })
 
 describe('load cleanup', () => {
@@ -567,7 +591,12 @@ describe('load cleanup', () => {
     await rimrafAsync(path.join(__dirname, 'dataToCleanupCopy'))
     await ncpAsync(path.join(__dirname, 'dataToCleanup'), path.join(__dirname, 'dataToCleanupCopy'))
     store = createDefaultStore()
-    store.registerProvider(Provider({ dataDirectory: path.join(__dirname, 'dataToCleanupCopy'), logger: store.options.logger }))
+    store.registerProvider(Provider({
+      dataDirectory: path.join(__dirname, 'dataToCleanupCopy'),
+      logger: store.options.logger,
+      createError: (m) => new Error(m),
+      AssetType
+    }))
     await store.init()
   })
 
