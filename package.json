@@ -1,6 +1,6 @@
 {
   "name": "jsreport-fs-store",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "File system based templates store",
   "scripts": {
     "start": "jsreport-studio-start --httpPort 5488",
