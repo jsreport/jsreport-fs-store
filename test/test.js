@@ -89,8 +89,7 @@ describe('common core tests', () => {
       dataDirectory: tmpData,
       logger: store.options.logger,
       syncModifications: true,
-      createError: (m) => new Error(m),
-      AssetType
+      createError: (m) => new Error(m)
     }))
 
     store.addFileExtensionResolver(() => resolveFileExtension())
@@ -104,7 +103,7 @@ describe('common core tests', () => {
   coreStoreTests(() => store)
 })
 
-describe('provider', () => {
+describe.only('provider', () => {
   let store
   const tmpData = path.join(__dirname, 'tmpData')
   let resolveFileExtension
@@ -117,8 +116,7 @@ describe('provider', () => {
     store.registerProvider(Provider({
       dataDirectory: tmpData,
       logger: store.options.logger,
-      createError: (m) => new Error(m),
-      AssetType
+      createError: (m) => new Error(m)
     }))
     store.addFileExtensionResolver(() => resolveFileExtension())
     await store.init()
@@ -132,9 +130,9 @@ describe('provider', () => {
   describe('basic', () => {
     it('remove should delete doc folder', async () => {
       await store.collection('templates').insert({ name: 'test' })
-      fs.existsSync(path.join(tmpData, 'templates', 'test')).should.be.true()
+      fs.existsSync(path.join(tmpData, 'test')).should.be.true()
       await store.collection('templates').remove({ name: 'test' })
-      fs.existsSync(path.join(tmpData, 'templates', 'test')).should.be.false()
+      fs.existsSync(path.join(tmpData, 'test')).should.be.false()
     })
 
     it('insert, update to a different name', async () => {
@@ -159,7 +157,7 @@ describe('provider', () => {
     it('updating arrays', async () => {
       await store.collection('templates').insert({ name: 'test', _id: 'foo', scripts: [{ name: 'foo' }] })
       await store.collection('templates').update({ name: 'test' }, { $set: { scripts: [] } })
-      const template = JSON.parse(fs.readFileSync(path.join(tmpData, 'templates', 'test', 'config.json')))
+      const template = JSON.parse(fs.readFileSync(path.join(tmpData, 'test', 'config.json')))
       template.scripts.should.have.length(0)
     })
   })
@@ -220,34 +218,25 @@ describe('provider', () => {
       await store.collection('templates').remove({ name: 'foo' })
       fs.existsSync(path.join(tmpData, 'a', 'b', 'c', 'foo')).should.be.false()
     })
-
-    it('update meta readonly asset', async () => {
-      await store.provider.close()
-      fs.writeFileSync(path.join(tmpData, 'foo.txt'), 'foo')
-      await store.init()
-      await store.collection('assets').update({ name: 'foo.txt' }, { $set: { content: Buffer.from('hello') } })
-      fs.readFileSync(path.join(tmpData, 'foo.txt')).toString().should.be.eql('hello')
-      fs.existsSync(path.join(tmpData, 'assets')).should.be.false()
-    })
   })
 
   describe('document properties', () => {
     it('should be persisted into dedicated files', async () => {
       await store.collection('templates').insert({ name: 'test', content: 'foo' })
-      const content = (await fs.readFileAsync(path.join(tmpData, 'templates', 'test', 'content.html'))).toString()
+      const content = (await fs.readFileAsync(path.join(tmpData, 'test', 'content.html'))).toString()
       content.should.be.eql('foo')
     })
 
     it('should be persisted with file extension gathered from resolveFileExtension', async () => {
       resolveFileExtension = () => 'txt'
       await store.collection('templates').insert({ name: 'test', content: 'foo' })
-      const content = (await fs.readFileAsync(path.join(tmpData, 'templates', 'test', 'content.txt'))).toString()
+      const content = (await fs.readFileAsync(path.join(tmpData, 'test', 'content.txt'))).toString()
       content.should.be.eql('foo')
     })
 
     it('should not be duplicated in the config file', async () => {
       await store.collection('templates').insert({ name: 'test', content: 'foo' })
-      const config = JSON.parse((await fs.readFileAsync(path.join(tmpData, 'templates', 'test', 'config.json'))).toString())
+      const config = JSON.parse((await fs.readFileAsync(path.join(tmpData, 'test', 'config.json'))).toString())
       should(config.content).not.be.ok()
     })
 
@@ -258,9 +247,9 @@ describe('provider', () => {
 
     it('should delete dedicated files for null set', async () => {
       await store.collection('templates').insert({ name: 'test', content: 'foo', phantom: { header: 'a' } })
-      fs.existsSync(path.join(tmpData, 'templates', 'test', 'header.html')).should.be.true()
+      fs.existsSync(path.join(tmpData, 'test', 'header.html')).should.be.true()
       await store.collection('templates').update({ name: 'test' }, { $set: { phantom: null } })
-      fs.existsSync(path.join(tmpData, 'templates', 'test', 'header.html')).should.be.false()
+      fs.existsSync(path.join(tmpData, 'test', 'header.html')).should.be.false()
     })
   })
 
@@ -313,7 +302,7 @@ describe('provider', () => {
           resolve()
         })
         store.provider.sync.tresholdForSkippingOwnProcessWrites = 1
-        fs.writeFileSync(path.join(tmpData, 'templates', 'test', 'config.json'), JSON.stringify({ $entitySet: 'templates', name: 'test', recipe: Date.now() }))
+        fs.writeFileSync(path.join(tmpData, 'test', 'config.json'), JSON.stringify({ $entitySet: 'templates', name: 'test', recipe: Date.now() }))
       })
     })
 
@@ -322,7 +311,7 @@ describe('provider', () => {
 
       let notified = false
       store.provider.sync.subscribe((e) => (notified = true))
-      fs.writeFileSync(path.join(tmpData, 'templates', 'test', 'config.json'), JSON.stringify({ $entitySet: 'templates', name: 'test', recipe: Date.now() }))
+      fs.writeFileSync(path.join(tmpData, 'test', 'config.json'), JSON.stringify({ $entitySet: 'templates', name: 'test', recipe: Date.now() }))
       return Promise.delay(200).then(() => {
         notified.should.be.false()
       })
@@ -515,8 +504,7 @@ describe('load', () => {
     store.registerProvider(Provider({
       dataDirectory: path.join(__dirname, 'data'),
       logger: store.options.logger,
-      createError: (m) => new Error(m),
-      AssetType
+      createError: (m) => new Error(m)
     }))
     await store.init()
   })
@@ -552,7 +540,7 @@ describe('load', () => {
 
   it('should load folders as entities', async () => {
     const res = await store.collection('folders').find({})
-    res.should.have.length(3)
+    res.should.have.length(4)
     const assets = res.find((r) => r.name === 'assets')
     assets.should.be.ok()
     assets.shortid.should.be.eql('1jpybw')
@@ -561,26 +549,9 @@ describe('load', () => {
     invoice.folder.shortid.should.be.eql('Q4EEHA')
   })
 
-  it('should load random files as assets', async () => {
-    const res = await store.collection('assets').findOne({ name: 'test.txt' })
-    res.content.should.be.instanceof(Buffer)
-    res.isMetaReadOnly.should.be.true()
-    res.folder.should.be.ok()
-  })
-
   it('should not load folder config.json as asset', async () => {
-    const res = await store.collection('assets').findOne({ name: 'random/config.json' })
+    const res = await store.collection('assets').findOne({ name: 'config.json' })
     should(res).be.null()
-  })
-
-  it('should fail when updating isMetaReadOnly asset ', async () => {
-    await store.collection('assets').findOne({ name: 'test.txt' })
-    return store.collection('assets').update({ name: 'test.txt' }, { $set: { folder: { shortid: 'foo' } } }).should.be.rejected()
-  })
-
-  it('should not fail when updating content of isMetaReadOnly asset ', async () => {
-    await store.collection('assets').findOne({ name: 'test.txt' })
-    return store.collection('assets').update({ name: 'test.txt' }, { $set: { content: 'foo' } })
   })
 })
 
@@ -594,8 +565,7 @@ describe('load cleanup', () => {
     store.registerProvider(Provider({
       dataDirectory: path.join(__dirname, 'dataToCleanupCopy'),
       logger: store.options.logger,
-      createError: (m) => new Error(m),
-      AssetType
+      createError: (m) => new Error(m)
     }))
     await store.init()
   })

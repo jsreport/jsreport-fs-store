@@ -39,3 +39,6 @@ logs
 dev.config.json
 prod.config.json
 .vscode
+
+/test/data/random/nested/config.json
+/test/data/random/config.json

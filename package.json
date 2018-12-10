@@ -37,7 +37,6 @@
     "bluebird": "3.5.3",
     "chokidar": "2.0.4",
     "lockfile": "1.0.4",
-    "lodash.isequal": "4.5.0",
     "lodash.omit": "4.5.0",
     "mingo": "2.2.8",
     "mkdirp": "0.5.1",
