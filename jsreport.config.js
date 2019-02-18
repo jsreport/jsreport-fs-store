@@ -13,7 +13,7 @@ module.exports = {
       'fs-store': {
         type: 'object',
         properties: {
-          syncModifications: { type: 'boolean', $exposeToApi: true },
+          syncModifications: { type: 'boolean' },
           dataDirectory: { type: 'string' },
           compactionInterval: { type: 'number' },
           corruptAlertThreshold: { type: 'number' },
