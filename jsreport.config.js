@@ -27,7 +27,7 @@ module.exports = {
           persistence: {
             type: 'object',
             properties: {
-              provider: { type: 'string' },
+              provider: { type: 'string', enum: ['fs'] },
               lock: {
                 type: 'object',
                 properties: {
