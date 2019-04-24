@@ -6,7 +6,7 @@ require('should')
 describe('queue', () => {
   let queue
 
-  beforeEach(() => (queue = Queue(10)))
+  beforeEach(() => (queue = Queue(50)))
 
   it('should process one item', async () => {
     let processed = false
@@ -43,7 +43,7 @@ describe('queue', () => {
     queue.push(() => blockingPromise)
     // this will wait longer than timeout 10ms
     const promise = queue.push(() => {})
-    await Promise.delay(10)
+    await Promise.delay(60)
     queue.rejectItemsWithTimeout()
     await promise.should.be.rejectedWith(/Timeout during waiting/)
     resolveBlockingPromise()
