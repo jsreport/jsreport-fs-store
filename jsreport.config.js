@@ -17,6 +17,7 @@ module.exports = {
           dataDirectory: { type: 'string' },
           compactionInterval: { type: 'number' },
           corruptAlertThreshold: { type: 'number' },
+          persistenceQueueWaitingTimeout: { type: 'number' },
           sync: {
             type: 'object',
             properties: {

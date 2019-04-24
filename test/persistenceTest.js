@@ -87,6 +87,7 @@ describe('persistence', () => {
 
   it('should use crash safe approach to update doc', async () => {
     fs.rename.twice()
+    fs.exists.twice()
     await persistence.update({ $entitySet: 'templates', name: 'foo', shortid: 'a' }, { $entitySet: 'templates', name: 'foo', shortid: 'b' })
     fs.mkdir.should.be.calledWith('~~foo~foo')
     fs.writeFile.should.be.calledWith(path.join('~~foo~foo', 'config.json'), JSON.stringify({ $entitySet: 'templates', name: 'foo', shortid: 'a' }, null, 4))

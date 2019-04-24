@@ -103,7 +103,7 @@ describe('common core tests', () => {
   coreStoreTests(() => store)
 })
 
-describe.only('provider', () => {
+describe('provider', () => {
   let store
   const tmpData = path.join(__dirname, 'tmpData')
   let resolveFileExtension
@@ -323,30 +323,30 @@ describe.only('provider', () => {
     beforeEach(() => store.provider.close())
 
     it('insert should go to queue', async () => {
-      store.provider.queue = sinon.mock()
+      store.provider.queue = { push: sinon.mock() }
       await store.collection('templates').insert({ name: 'test' })
-      store.provider.queue.should.be.called()
+      store.provider.queue.push.should.be.called()
     })
 
     it('remove should go to queue', async () => {
       await store.collection('templates').insert({ name: 'test' })
-      store.provider.queue = sinon.spy()
+      store.provider.queue = { push: sinon.spy() }
       await store.collection('templates').remove({ name: 'test' })
-      store.provider.queue.should.be.called()
+      store.provider.queue.push.should.be.called()
     })
 
     it('update should go to queue', async () => {
       await store.collection('templates').insert({ name: 'test' })
-      store.provider.queue = sinon.spy()
+      store.provider.queue = { push: sinon.spy() }
       await store.collection('templates').update({ name: 'test' }, { $set: { recipe: 'foo' } })
-      store.provider.queue.should.be.called()
+      store.provider.queue.push.should.be.called()
     })
 
     it('find toArray should go to queue', async () => {
       await store.collection('templates').insert({ name: 'test' })
-      store.provider.queue = sinon.spy()
+      store.provider.queue = { push: sinon.spy() }
       await store.collection('templates').find({ name: 'test' }).toArray()
-      store.provider.queue.should.be.called()
+      store.provider.queue.push.should.be.called()
     })
   })
 
@@ -540,7 +540,7 @@ describe('load', () => {
 
   it('should load folders as entities', async () => {
     const res = await store.collection('folders').find({})
-    res.should.have.length(4)
+    res.should.have.length(3)
     const assets = res.find((r) => r.name === 'assets')
     assets.should.be.ok()
     assets.shortid.should.be.eql('1jpybw')

@@ -6,11 +6,11 @@ require('should')
 describe('queue', () => {
   let queue
 
-  beforeEach(() => (queue = Queue()))
+  beforeEach(() => (queue = Queue(10)))
 
   it('should process one item', async () => {
     let processed = false
-    await queue(() => (processed = true))
+    await queue.push(() => (processed = true))
     processed.should.be.true()
   })
 
@@ -19,11 +19,11 @@ describe('queue', () => {
     let r2
     let r2Running = false
 
-    const p1 = queue(() => (new Promise((resolve) => {
+    const p1 = queue.push(() => (new Promise((resolve) => {
       r1 = resolve
     })))
 
-    const p2 = queue(() => (new Promise((resolve) => {
+    const p2 = queue.push(() => (new Promise((resolve) => {
       r2Running = true
       r2 = resolve
     })))
@@ -34,5 +34,18 @@ describe('queue', () => {
     r2()
     await p2
     r2Running.should.be.true()
+  })
+
+  it('rejectItemsWithTimeout should reject old items', async () => {
+    // block queue with somethig
+    let resolveBlockingPromise
+    let blockingPromise = new Promise((resolve) => (resolveBlockingPromise = resolve))
+    queue.push(() => blockingPromise)
+    // this will wait longer than timeout 10ms
+    const promise = queue.push(() => {})
+    await Promise.delay(10)
+    queue.rejectItemsWithTimeout()
+    await promise.should.be.rejectedWith(/Timeout during waiting/)
+    resolveBlockingPromise()
   })
 })
