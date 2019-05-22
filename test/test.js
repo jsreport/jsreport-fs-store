@@ -1,4 +1,5 @@
 const DocumentStore = require('jsreport-core/lib/store/documentStore.js')
+const SchemaValidator = require('jsreport-core/lib/util/schemaValidator')
 const coreStoreTests = require('jsreport-core').tests.documentStore()
 const Provider = require('../lib/provider')
 const path = require('path')
@@ -19,6 +20,8 @@ const AssetType = {
 }
 
 function createDefaultStore () {
+  const validator = new SchemaValidator()
+
   const store = DocumentStore({
     logger: {
       info: () => { },
@@ -26,7 +29,7 @@ function createDefaultStore () {
       warn: () => { },
       debug: () => { }
     }
-  })
+  }, validator)
 
   store.registerEntityType('FolderType', {
     _id: { type: 'Edm.String', key: true },
@@ -54,7 +57,7 @@ function createDefaultStore () {
     content: { type: 'Edm.String', document: { extension: 'html', engine: true } },
     recipe: { type: 'Edm.String' },
     modificationDate: { type: 'Edm.DateTimeOffset' },
-    phantom: { type: 'jsreport.PhantomType' },
+    phantom: { type: 'jsreport.PhantomType', schema: { type: 'null' } },
     folder: { type: 'jsreport.FolderRefType' },
     scripts: { type: 'Collection(jsreport.ScriptType)' }
   })
