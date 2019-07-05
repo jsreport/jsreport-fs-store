@@ -43,7 +43,7 @@
     "mkdirp": "0.5.1",
     "node.extend.without.arrays": "1.1.6",
     "rimraf": "2.6.3",
-    "socket.io": "2.1.1",
+    "socket.io": "2.2.0",
     "uuid": "3.3.2"
   },
   "author": "Jan Blaha",
@@ -62,7 +62,7 @@
     "should": "13.2.3",
     "should-sinon": "0.0.6",
     "sinon": "6.3.4",
-    "socket.io-client": "2.1.1",
+    "socket.io-client": "2.2.0",
     "standard": "12.0.1"
   },
   "files": [
