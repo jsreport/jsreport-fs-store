@@ -1,7 +1,10 @@
 const path = require('path')
 const should = require('should')
 const JsReport = require('jsreport-core')
-var IO = require('socket.io-client')
+const IO = require('socket.io-client')
+const Promise = require('bluebird')
+const fs = require('fs')
+const rimrafAsync = Promise.promisify(require('rimraf'))
 
 describe('extension use', () => {
   let jsreport
@@ -65,25 +68,46 @@ describe('extension disabled through store', () => {
 }).timeout(10000)
 
 describe('extension sockets', () => {
+  const tmpData = path.join(__dirname, 'tmpData')
   let jsreport
   let io
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await rimrafAsync(tmpData)
     io = IO('http://localhost:3000')
     jsreport = JsReport({ store: { provider: 'fs' } })
     jsreport.use(require('jsreport-express')({ httpPort: 3000 }))
-    jsreport.use(require('../')({ syncModifications: true }))
+    jsreport.use(require('../')({ syncModifications: true, dataDirectory: tmpData }))
     return jsreport.init()
   })
 
-  afterEach(() => {
+  afterEach(async () => {
+    await rimrafAsync(tmpData)
     io.close()
     return jsreport.close()
   })
 
-  it('should emit sockets', (done) => {
-    io.on('connect', () => jsreport.documentStore.provider.emit('external-modification'))
+  it('should not emit sockets when root file is edited', (done) => {
+    jsreport.documentStore.provider.sync.tresholdForSkippingOwnProcessWrites = 10
+    let _done = false
+    io.on('connect', () => fs.writeFileSync(path.join(tmpData, 'users'), 'hello'))
+    io.on('external-modification', () => {
+      _done = true
+      done(new Error(`shouldn't be called`))
+    })
+    setTimeout(() => {
+      if (!_done) {
+        done()
+      }
+    }, 500)
+  })
 
+  it('should emit sockets when nested files are edited', (done) => {
+    jsreport.documentStore.provider.sync.tresholdForSkippingOwnProcessWrites = 10
+    io.on('connect', () => {
+      fs.mkdirSync(path.join(tmpData, 'folderA'))
+      fs.writeFileSync(path.join(tmpData, 'folderA', 'file.txt'), 'hello')
+    })
     io.on('external-modification', () => done())
   })
 })
