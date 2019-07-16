@@ -15,6 +15,7 @@ module.exports = {
         properties: {
           syncModifications: { type: 'boolean' },
           dataDirectory: { type: 'string' },
+          compactionEnabled: { type: 'boolean', default: true },
           compactionInterval: { type: 'number' },
           corruptAlertThreshold: { type: 'number' },
           persistenceQueueWaitingTimeout: { type: 'number' },
