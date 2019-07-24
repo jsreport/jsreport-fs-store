@@ -396,7 +396,7 @@ describe('provider', () => {
       const doc = await store.collection('templates').insert({ name: 'test' })
       store.provider.sync.publish = sinon.spy()
       await store.collection('templates').remove({ name: 'test' })
-      store.provider.sync.publish.should.be.alwaysCalledWithMatch({ action: 'remove', doc: doc })
+      store.provider.sync.publish.should.be.alwaysCalledWithMatch({ action: 'remove', doc: { $entitySet: doc.$entitySet, _id: doc._id } })
     })
 
     it('subscribed insert event should insert doc', async () => {
