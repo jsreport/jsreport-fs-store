@@ -22,7 +22,7 @@ module.exports = {
           sync: {
             type: 'object',
             properties: {
-              provider: { type: 'string' },
+              provider: { type: 'string', enum: ['fs'] },
               usePolling: { type: 'boolean', default: true }
             }
           },
