@@ -1,8 +1,8 @@
 
 module.exports = {
-  'name': 'fs-store',
-  'main': 'lib/main.js',
-  'optionsSchema': {
+  name: 'fs-store',
+  main: 'lib/main.js',
+  optionsSchema: {
     store: {
       type: 'object',
       properties: {
@@ -23,7 +23,8 @@ module.exports = {
             type: 'object',
             properties: {
               provider: { type: 'string', enum: ['fs'] },
-              usePolling: { type: 'boolean', default: true }
+              usePolling: { type: 'boolean', default: true },
+              reloadDebounce: { type: 'number', default: 800 }
             }
           },
           persistence: {
@@ -44,5 +45,5 @@ module.exports = {
       }
     }
   },
-  'dependencies': [ 'templates' ]
+  dependencies: ['templates']
 }

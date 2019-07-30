@@ -39,7 +39,7 @@ describe('queue', () => {
   it('rejectItemsWithTimeout should reject old items', async () => {
     // block queue with somethig
     let resolveBlockingPromise
-    let blockingPromise = new Promise((resolve) => (resolveBlockingPromise = resolve))
+    const blockingPromise = new Promise((resolve) => (resolveBlockingPromise = resolve))
     queue.push(() => blockingPromise)
     // this will wait longer than timeout 10ms
     const promise = queue.push(() => {})

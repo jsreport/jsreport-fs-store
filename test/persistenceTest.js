@@ -96,7 +96,7 @@ describe('persistence', () => {
   })
 
   it('compact should crash safe approach', async () => {
-    const documents = { reports: [ { name: 'a' } ] }
+    const documents = { reports: [{ name: 'a' }] }
     await persistence.compact(documents)
     fs.writeFile.should.be.calledWith('~reports', JSON.stringify({ name: 'a' }) + '\n')
     fs.rename.should.be.calledWith('~reports', 'reports')

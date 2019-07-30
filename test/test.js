@@ -304,19 +304,29 @@ describe('provider', () => {
           e.action.should.be.eql('reload')
           resolve()
         })
-        store.provider.sync.tresholdForSkippingOwnProcessWrites = 1
-        fs.writeFileSync(path.join(tmpData, 'test', 'config.json'), JSON.stringify({ $entitySet: 'templates', name: 'test', recipe: Date.now() }))
+        fs.writeFileSync(path.join(tmpData, 'foo.ff'), 'changing')
       })
     })
 
-    it('should not fire reload event for recent changes', async () => {
-      await store.collection('templates').insert({ name: 'test', recipe: 'foo' })
-
+    it('should not fire reload for later changes', async () => {
       let notified = false
       store.provider.sync.subscribe((e) => (notified = true))
-      fs.writeFileSync(path.join(tmpData, 'test', 'config.json'), JSON.stringify({ $entitySet: 'templates', name: 'test', recipe: Date.now() }))
+      await store.collection('templates').insert({ name: 'test', recipe: 'foo' })
+
       return Promise.delay(200).then(() => {
         notified.should.be.false()
+      })
+    })
+
+    it('should debounce reload events', async () => {
+      await store.collection('templates').insert({ name: 'test', recipe: 'foo' })
+      let reloadCount = 0
+      store.provider.sync.subscribe((e) => (reloadCount++))
+      fs.writeFileSync(path.join(tmpData, 'a.ff'), 'changing')
+      fs.writeFileSync(path.join(tmpData, 'b.ff'), 'changing')
+      fs.writeFileSync(path.join(tmpData, 'c.ff'), 'changing')
+      return Promise.delay(1000).then(() => {
+        reloadCount.should.be.eql(1)
       })
     })
   })
