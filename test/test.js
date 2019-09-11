@@ -316,12 +316,12 @@ describe('provider', () => {
     })
 
     it('should not fire reload for later changes', async () => {
-      let notified = false
-      store.provider.sync.subscribe(e => (notified = true))
+      let notified = null
+      store.provider.sync.subscribe(e => (notified = e))
       await store.collection('templates').insert({ name: 'test', recipe: 'foo' })
 
       return Promise.delay(1000).then(() => {
-        notified.should.be.false()
+        should(notified).be.null()
       })
     })
 
@@ -350,7 +350,7 @@ describe('provider', () => {
       return Promise.delay(1000).then(() => {
         should(notified).be.null()
       })
-    }).timeout(20000)
+    })
   })
 
   describe('queueing', () => {
