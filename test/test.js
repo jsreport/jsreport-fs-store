@@ -22,14 +22,17 @@ const AssetType = {
 function createDefaultStore () {
   const validator = new SchemaValidator()
 
-  const store = DocumentStore({
-    logger: {
-      info: () => { },
-      error: () => { },
-      warn: () => { },
-      debug: () => { }
-    }
-  }, validator)
+  const store = DocumentStore(
+    {
+      logger: {
+        info: () => {},
+        error: () => {},
+        warn: () => {},
+        debug: () => {}
+      }
+    },
+    validator
+  )
 
   store.registerEntityType('FolderType', {
     _id: { type: 'Edm.String', key: true },
@@ -88,12 +91,14 @@ describe('common core tests', () => {
 
     store = createDefaultStore()
 
-    store.registerProvider(Provider({
-      dataDirectory: tmpData,
-      logger: store.options.logger,
-      syncModifications: true,
-      createError: (m) => new Error(m)
-    }))
+    store.registerProvider(
+      Provider({
+        dataDirectory: tmpData,
+        logger: store.options.logger,
+        syncModifications: true,
+        createError: m => new Error(m)
+      })
+    )
 
     store.addFileExtensionResolver(() => resolveFileExtension())
   })
@@ -116,11 +121,13 @@ describe('provider', () => {
     await rimrafAsync(tmpData)
 
     store = createDefaultStore()
-    store.registerProvider(Provider({
-      dataDirectory: tmpData,
-      logger: store.options.logger,
-      createError: (m) => new Error(m)
-    }))
+    store.registerProvider(
+      Provider({
+        dataDirectory: tmpData,
+        logger: store.options.logger,
+        createError: m => new Error(m)
+      })
+    )
     store.addFileExtensionResolver(() => resolveFileExtension())
     await store.init()
   })
@@ -299,8 +306,8 @@ describe('provider', () => {
   describe('files monitoring', () => {
     it('should fire reload event on file changes', async () => {
       await store.collection('templates').insert({ name: 'test', recipe: 'foo' })
-      return new Promise((resolve) => {
-        store.provider.sync.subscribe((e) => {
+      return new Promise(resolve => {
+        store.provider.sync.subscribe(e => {
           e.action.should.be.eql('reload')
           resolve()
         })
@@ -310,10 +317,10 @@ describe('provider', () => {
 
     it('should not fire reload for later changes', async () => {
       let notified = false
-      store.provider.sync.subscribe((e) => (notified = true))
+      store.provider.sync.subscribe(e => (notified = true))
       await store.collection('templates').insert({ name: 'test', recipe: 'foo' })
 
-      return Promise.delay(200).then(() => {
+      return Promise.delay(1000).then(() => {
         notified.should.be.false()
       })
     })
@@ -321,7 +328,7 @@ describe('provider', () => {
     it('should debounce reload events', async () => {
       await store.collection('templates').insert({ name: 'test', recipe: 'foo' })
       let reloadCount = 0
-      store.provider.sync.subscribe((e) => (reloadCount++))
+      store.provider.sync.subscribe(e => reloadCount++)
       fs.writeFileSync(path.join(tmpData, 'a.ff'), 'changing')
       fs.writeFileSync(path.join(tmpData, 'b.ff'), 'changing')
       fs.writeFileSync(path.join(tmpData, 'c.ff'), 'changing')
@@ -329,6 +336,21 @@ describe('provider', () => {
         reloadCount.should.be.eql(1)
       })
     })
+
+    it('should not fire reload for changes in pressure', async () => {
+      let notified = null
+      store.provider.sync.subscribe(e => (notified = e))
+
+      const promises = []
+      for (let i = 0; i < 100; i++) {
+        promises.push(store.collection('templates').insert({ name: 'test' + i, recipe: 'foo' }))
+      }
+      await Promise.all(promises)
+
+      return Promise.delay(1000).then(() => {
+        should(notified).be.null()
+      })
+    }).timeout(20000)
   })
 
   describe('queueing', () => {
@@ -358,7 +380,10 @@ describe('provider', () => {
     it('find toArray should go to queue', async () => {
       await store.collection('templates').insert({ name: 'test' })
       store.provider.queue = { push: sinon.spy() }
-      await store.collection('templates').find({ name: 'test' }).toArray()
+      await store
+        .collection('templates')
+        .find({ name: 'test' })
+        .toArray()
       store.provider.queue.push.should.be.called()
     })
   })
@@ -453,7 +478,7 @@ describe('provider', () => {
     })
 
     it('subscribed refresh event should reload new doc', async () => {
-      store.provider.persistence.reload = (doc) => doc
+      store.provider.persistence.reload = doc => doc
 
       await store.provider.sync.subscription({
         action: 'refresh',
@@ -467,7 +492,7 @@ describe('provider', () => {
 
     it('subscribed refresh event should reload existing doc', async () => {
       const doc = await store.collection('templates').insert({ name: 'test' })
-      store.provider.persistence.reload = (d) => Object.assign({}, d, { name: 'foo' })
+      store.provider.persistence.reload = d => Object.assign({}, d, { name: 'foo' })
 
       await store.provider.sync.subscription({
         action: 'refresh',
@@ -493,7 +518,12 @@ describe('provider', () => {
     it('update should append to file new entry', async () => {
       await store.collection('settings').insert({ key: 'a', value: '1' })
       await store.collection('settings').update({ key: 'a' }, { $set: { value: '2' } })
-      const docs = fs.readFileSync(path.join(tmpData, 'settings')).toString().split('\n').filter(c => c).map(JSON.parse)
+      const docs = fs
+        .readFileSync(path.join(tmpData, 'settings'))
+        .toString()
+        .split('\n')
+        .filter(c => c)
+        .map(JSON.parse)
       docs.should.have.length(2)
       docs[0].value.should.be.eql('1')
       docs[1].value.should.be.eql('2')
@@ -502,7 +532,12 @@ describe('provider', () => {
     it('remove should append $$delete', async () => {
       await store.collection('settings').insert({ key: 'a', value: '1' })
       await store.collection('settings').remove({ key: 'a' })
-      const docs = fs.readFileSync(path.join(tmpData, 'settings')).toString().split('\n').filter(c => c).map(JSON.parse)
+      const docs = fs
+        .readFileSync(path.join(tmpData, 'settings'))
+        .toString()
+        .split('\n')
+        .filter(c => c)
+        .map(JSON.parse)
       docs.should.have.length(2)
       docs[1].$$deleted.should.be.true()
     })
@@ -514,11 +549,13 @@ describe('load', () => {
 
   beforeEach(async () => {
     store = createDefaultStore()
-    store.registerProvider(Provider({
-      dataDirectory: path.join(__dirname, 'data'),
-      logger: store.options.logger,
-      createError: (m) => new Error(m)
-    }))
+    store.registerProvider(
+      Provider({
+        dataDirectory: path.join(__dirname, 'data'),
+        logger: store.options.logger,
+        createError: m => new Error(m)
+      })
+    )
     await store.init()
   })
 
@@ -538,7 +575,10 @@ describe('load', () => {
   })
 
   it('should load settings from flat file', async () => {
-    const res = await store.collection('settings').find({}).sort({ key: 1 })
+    const res = await store
+      .collection('settings')
+      .find({})
+      .sort({ key: 1 })
     res.should.have.length(2)
     res[0].key.should.be.eql('a')
     res[1].key.should.be.eql('b')
@@ -554,7 +594,7 @@ describe('load', () => {
   it('should load folders as entities', async () => {
     const res = await store.collection('folders').find({})
     res.should.have.length(3)
-    const assets = res.find((r) => r.name === 'assets')
+    const assets = res.find(r => r.name === 'assets')
     assets.should.be.ok()
     assets.shortid.should.be.eql('1jpybw')
 
@@ -575,11 +615,13 @@ describe('load cleanup', () => {
     await rimrafAsync(path.join(__dirname, 'dataToCleanupCopy'))
     await ncpAsync(path.join(__dirname, 'dataToCleanup'), path.join(__dirname, 'dataToCleanupCopy'))
     store = createDefaultStore()
-    store.registerProvider(Provider({
-      dataDirectory: path.join(__dirname, 'dataToCleanupCopy'),
-      logger: store.options.logger,
-      createError: (m) => new Error(m)
-    }))
+    store.registerProvider(
+      Provider({
+        dataDirectory: path.join(__dirname, 'dataToCleanupCopy'),
+        logger: store.options.logger,
+        createError: m => new Error(m)
+      })
+    )
     await store.init()
   })
 
