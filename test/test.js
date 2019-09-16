@@ -114,6 +114,7 @@ describe('common core tests', () => {
 describe('provider', () => {
   let store
   const tmpData = path.join(__dirname, 'tmpData')
+  const blobStorageDirectory = path.join(tmpData, 'blobs')
   let resolveFileExtension
 
   beforeEach(async () => {
@@ -124,12 +125,14 @@ describe('provider', () => {
     store.registerProvider(
       Provider({
         dataDirectory: tmpData,
+        blobStorageDirectory,
         logger: store.options.logger,
         createError: m => new Error(m)
       })
     )
     store.addFileExtensionResolver(() => resolveFileExtension())
     await store.init()
+    fs.mkdirSync(blobStorageDirectory)
   })
 
   afterEach(async () => {
@@ -315,10 +318,21 @@ describe('provider', () => {
       })
     })
 
-    it('should not fire reload for later changes', async () => {
+    it('should not fire reload for insert', async () => {
       let notified = null
       store.provider.sync.subscribe(e => (notified = e))
       await store.collection('templates').insert({ name: 'test', recipe: 'foo' })
+
+      return Promise.delay(1000).then(() => {
+        should(notified).be.null()
+      })
+    })
+
+    it('should not fire reload for update', async () => {
+      let notified = null
+      store.provider.sync.subscribe(e => (notified = e))
+      await store.collection('templates').insert({ name: 'test', recipe: 'foo', content: 'a' })
+      await store.collection('templates').update({ name: 'test' }, { $set: { content: 'changed' } })
 
       return Promise.delay(1000).then(() => {
         should(notified).be.null()
@@ -342,10 +356,52 @@ describe('provider', () => {
       store.provider.sync.subscribe(e => (notified = e))
 
       const promises = []
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < 20; i++) {
         promises.push(store.collection('templates').insert({ name: 'test' + i, recipe: 'foo' }))
       }
       await Promise.all(promises)
+
+      return Promise.delay(1000).then(() => {
+        should(notified).be.null()
+      })
+    })
+
+    it('should not fire reload for settings changes', async () => {
+      let notified = null
+      store.provider.sync.subscribe(e => (notified = e))
+      await store.collection('settings').insert({ key: 'a', value: 'b' })
+      await store.collection('settings').update({ key: 'a' }, { $set: { value: 'c' } })
+
+      return Promise.delay(1000).then(() => {
+        should(notified).be.null()
+      })
+    })
+
+    it('should fire reload when a custom folder added', async () => {
+      return new Promise(resolve => {
+        store.provider.sync.subscribe(e => {
+          e.action.should.be.eql('reload')
+          resolve()
+        })
+        fs.mkdirSync(path.join(tmpData, 'myCustomFolder'))
+      })
+    })
+
+    it('should not fire reload for changes in the blob storage', async () => {
+      let notified = null
+      store.provider.sync.subscribe(e => (notified = e))
+      fs.writeFileSync(path.join(blobStorageDirectory, 'file.txt'), 'aaa')
+      return Promise.delay(1000).then(() => {
+        should(notified).be.null()
+      })
+    })
+
+    it('should not fire reload for flat files compaction', async () => {
+      let notified = null
+      store.provider.sync.subscribe(e => (notified = e))
+      await store.collection('settings').insert({ key: 'a', value: 'b' })
+      await store.collection('settings').update({ key: 'a' }, { $set: { value: 'c' } })
+      await store.provider.persistence.compact(store.provider.documents)
 
       return Promise.delay(1000).then(() => {
         should(notified).be.null()
