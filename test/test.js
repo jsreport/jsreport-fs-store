@@ -318,10 +318,13 @@ describe('provider', () => {
       })
     })
 
-    it('should not fire reload for insert', async () => {
+    it('should not fire reload for common cud operations', async () => {
       let notified = null
       store.provider.sync.subscribe(e => (notified = e))
+
       await store.collection('templates').insert({ name: 'test', recipe: 'foo' })
+      await store.collection('templates').update({ name: 'test' }, { $set: { content: 'changed' } })
+      await store.collection('templates').remove({ name: 'test' })
 
       return Promise.delay(1000).then(() => {
         should(notified).be.null()
@@ -356,8 +359,11 @@ describe('provider', () => {
       store.provider.sync.subscribe(e => (notified = e))
 
       const promises = []
-      for (let i = 0; i < 20; i++) {
-        promises.push(store.collection('templates').insert({ name: 'test' + i, recipe: 'foo' }))
+      for (let i = 0; i < 100; i++) {
+        promises.push((async () => {
+          await store.collection('templates').insert({ name: 'test' + i, recipe: 'foo' })
+          return store.collection('templates').update({ name: 'test' + i, recipe: 'foo' }, { $set: { recipe: 'foo2' } })
+        })())
       }
       await Promise.all(promises)
 
