@@ -4,6 +4,7 @@ const fs = require('fs')
 Promise.promisifyAll(fs)
 const rimraf = Promise.promisify(require('rimraf'))
 const FS = require('../lib/fileSystem')
+const should = require('should')
 
 describe('fileSystem', () => {
   const tmpDir = path.join(__dirname, 'tmp')
@@ -70,5 +71,15 @@ describe('fileSystem', () => {
 
     const fooDirStat = await fileSystem.exists('foo')
     fooDirStat.should.be.false()
+  })
+
+  it('remove shouldnt clear memory state for equaly prefixed folders', async () => {
+    await fileSystem.mkdir('foo')
+    await fileSystem.mkdir('foo2')
+    await fileSystem.writeFile(fileSystem.path.join('foo', 'foo.txt'), 'Hello')
+    await fileSystem.writeFile(fileSystem.path.join('foo2', 'foo.txt'), 'Hello2')
+    await fileSystem.remove('foo')
+    should(fileSystem.memoryState[path.join(tmpDir, 'foo', 'foo.txt')]).not.be.ok()
+    should(fileSystem.memoryState[path.join(tmpDir, 'foo2', 'foo.txt')]).be.ok()
   })
 })
