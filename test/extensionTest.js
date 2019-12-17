@@ -92,7 +92,7 @@ describe('extension sockets', () => {
     io.on('connect', () => fs.writeFileSync(path.join(tmpData, 'users'), 'hello'))
     io.on('external-modification', () => {
       _done = true
-      done(new Error(`shouldn't be called`))
+      done(new Error('shouldn\'t be called'))
     })
     setTimeout(() => {
       if (!_done) {
