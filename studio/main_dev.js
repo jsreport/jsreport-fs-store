@@ -2,7 +2,7 @@ import Studio from 'jsreport-studio'
 import io from 'socket.io-client'
 
 Studio.initializeListeners.push(() => {
-  if (!Studio.extensions['fs-store'].options.syncModifications) {
+  if (!Studio.extensions['fs-store'].options.updateStudio) {
     console.log('Skipping active sync with server')
     return
   }

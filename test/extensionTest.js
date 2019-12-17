@@ -77,7 +77,7 @@ describe('extension sockets', () => {
     io = IO('http://localhost:3000')
     jsreport = JsReport({ store: { provider: 'fs' } })
     jsreport.use(require('jsreport-express')({ httpPort: 3000 }))
-    jsreport.use(require('../')({ syncModifications: true, dataDirectory: tmpData }))
+    jsreport.use(require('../')({ syncModifications: true, sync: { reloadDebounce: 10 }, dataDirectory: tmpData }))
     return jsreport.init()
   })
 
@@ -88,7 +88,6 @@ describe('extension sockets', () => {
   })
 
   it('should not emit sockets when root file is edited', (done) => {
-    jsreport.documentStore.provider.sync.tresholdForSkippingOwnProcessWrites = 10
     let _done = false
     io.on('connect', () => fs.writeFileSync(path.join(tmpData, 'users'), 'hello'))
     io.on('external-modification', () => {
@@ -99,11 +98,10 @@ describe('extension sockets', () => {
       if (!_done) {
         done()
       }
-    }, 500)
+    }, 300)
   })
 
   it('should emit sockets when nested files are edited', (done) => {
-    jsreport.documentStore.provider.sync.tresholdForSkippingOwnProcessWrites = 10
     io.on('connect', () => {
       fs.mkdirSync(path.join(tmpData, 'folderA'))
       fs.writeFileSync(path.join(tmpData, 'folderA', 'file.txt'), 'hello')

@@ -95,7 +95,8 @@ describe('common core tests', () => {
       Provider({
         dataDirectory: tmpData,
         logger: store.options.logger,
-        syncModifications: true,
+        persistence: { provider: 'fs' },
+        sync: { provider: 'fs' },
         createError: m => new Error(m)
       })
     )
@@ -126,6 +127,8 @@ describe('provider', () => {
       Provider({
         dataDirectory: tmpData,
         blobStorageDirectory,
+        sync: { provider: 'fs' },
+        persistence: { provider: 'fs' },
         logger: store.options.logger,
         createError: m => new Error(m)
       })
@@ -615,6 +618,8 @@ describe('load', () => {
       Provider({
         dataDirectory: path.join(__dirname, 'data'),
         logger: store.options.logger,
+        persistence: { provider: 'fs' },
+        sync: { provider: 'fs' },
         createError: m => new Error(m)
       })
     )
@@ -681,6 +686,8 @@ describe('load cleanup', () => {
       Provider({
         dataDirectory: path.join(__dirname, 'dataToCleanupCopy'),
         logger: store.options.logger,
+        persistence: { provider: 'fs' },
+        sync: { provider: 'fs' },
         createError: m => new Error(m)
       })
     )
