@@ -34,49 +34,6 @@ function createDefaultStore () {
     validator
   )
 
-  store.registerEntityType('FolderType', {
-    _id: { type: 'Edm.String', key: true },
-    name: { type: 'Edm.String', publicKey: true },
-    shortid: { type: 'Edm.String' },
-    creationDate: { type: 'Edm.DateTimeOffset' },
-    modificationDate: { type: 'Edm.DateTimeOffset' }
-  })
-
-  store.registerComplexType('ScriptType', {
-    name: { type: 'Edm.String', publicKey: true }
-  })
-
-  store.registerComplexType('FolderRefType', {
-    shortid: { type: 'Edm.String' }
-  })
-
-  store.registerComplexType('PhantomType', {
-    margin: { type: 'Edm.String' },
-    header: { type: 'Edm.String', document: { extension: 'html', engine: true } }
-  })
-  store.registerEntityType('TemplateType', {
-    _id: { type: 'Edm.String', key: true },
-    name: { type: 'Edm.String', publicKey: true },
-    content: { type: 'Edm.String', document: { extension: 'html', engine: true } },
-    recipe: { type: 'Edm.String' },
-    modificationDate: { type: 'Edm.DateTimeOffset' },
-    phantom: { type: 'jsreport.PhantomType', schema: { type: 'null' } },
-    folder: { type: 'jsreport.FolderRefType' },
-    scripts: { type: 'Collection(jsreport.ScriptType)' }
-  })
-  store.registerEntitySet('templates', { entityType: 'jsreport.TemplateType', splitIntoDirectories: true })
-
-  store.registerEntityType('AssetType', AssetType)
-  store.registerEntitySet('assets', { entityType: 'jsreport.AssetType', splitIntoDirectories: true })
-
-  store.registerEntityType('SettingsType', {
-    _id: { type: 'Edm.String', key: true },
-    key: { type: 'Edm.String' },
-    value: { type: 'Edm.String' }
-  })
-  store.registerEntitySet('settings', { entityType: 'jsreport.SettingsType' })
-  store.registerEntitySet('folders', { entityType: 'jsreport.FolderType', splitIntoDirectories: true })
-
   return store
 }
 
@@ -91,6 +48,8 @@ describe('common core tests', () => {
 
     store = createDefaultStore()
 
+    coreStoreTests.init(() => store)
+
     store.registerProvider(
       Provider({
         dataDirectory: tmpData,
@@ -102,11 +61,13 @@ describe('common core tests', () => {
     )
 
     store.addFileExtensionResolver(() => resolveFileExtension())
+
+    await store.init()
   })
 
   afterEach(async () => {
     await store.provider.close()
-    return rimrafAsync(tmpData)
+    await rimrafAsync(tmpData)
   })
 
   coreStoreTests(() => store)
@@ -123,6 +84,9 @@ describe('provider', () => {
     await rimrafAsync(tmpData)
 
     store = createDefaultStore()
+
+    addCommonTypes(store)
+
     store.registerProvider(
       Provider({
         dataDirectory: tmpData,
@@ -133,8 +97,11 @@ describe('provider', () => {
         createError: m => new Error(m)
       })
     )
+
     store.addFileExtensionResolver(() => resolveFileExtension())
+
     await store.init()
+
     fs.mkdirSync(blobStorageDirectory)
   })
 
@@ -614,6 +581,9 @@ describe('load', () => {
 
   beforeEach(async () => {
     store = createDefaultStore()
+
+    addCommonTypes(store)
+
     store.registerProvider(
       Provider({
         dataDirectory: path.join(__dirname, 'data'),
@@ -623,6 +593,7 @@ describe('load', () => {
         createError: m => new Error(m)
       })
     )
+
     await store.init()
   })
 
@@ -681,7 +652,11 @@ describe('load cleanup', () => {
   beforeEach(async () => {
     await rimrafAsync(path.join(__dirname, 'dataToCleanupCopy'))
     await ncpAsync(path.join(__dirname, 'dataToCleanup'), path.join(__dirname, 'dataToCleanupCopy'))
+
     store = createDefaultStore()
+
+    addCommonTypes(store)
+
     store.registerProvider(
       Provider({
         dataDirectory: path.join(__dirname, 'dataToCleanupCopy'),
@@ -718,3 +693,51 @@ describe('load cleanup', () => {
     fs.readFileSync(path.join(__dirname, 'dataToCleanupCopy', 'settings'), 'utf8').should.not.containEql('"value":"1"')
   })
 })
+
+function addCommonTypes (store) {
+  store.registerEntityType('FolderType', {
+    _id: { type: 'Edm.String', key: true },
+    name: { type: 'Edm.String', publicKey: true },
+    shortid: { type: 'Edm.String' },
+    creationDate: { type: 'Edm.DateTimeOffset' },
+    modificationDate: { type: 'Edm.DateTimeOffset' }
+  })
+
+  store.registerComplexType('ScriptType', {
+    name: { type: 'Edm.String', publicKey: true }
+  })
+
+  store.registerComplexType('FolderRefType', {
+    shortid: { type: 'Edm.String' }
+  })
+
+  store.registerComplexType('PhantomType', {
+    margin: { type: 'Edm.String' },
+    header: { type: 'Edm.String', document: { extension: 'html', engine: true } }
+  })
+
+  store.registerEntityType('TemplateType', {
+    _id: { type: 'Edm.String', key: true },
+    name: { type: 'Edm.String', publicKey: true },
+    content: { type: 'Edm.String', document: { extension: 'html', engine: true } },
+    recipe: { type: 'Edm.String' },
+    modificationDate: { type: 'Edm.DateTimeOffset' },
+    phantom: { type: 'jsreport.PhantomType', schema: { type: 'null' } },
+    folder: { type: 'jsreport.FolderRefType' },
+    scripts: { type: 'Collection(jsreport.ScriptType)' }
+  })
+  store.registerEntitySet('templates', { entityType: 'jsreport.TemplateType', splitIntoDirectories: true })
+
+  store.registerEntityType('AssetType', AssetType)
+  store.registerEntitySet('assets', { entityType: 'jsreport.AssetType', splitIntoDirectories: true })
+
+  store.registerEntityType('SettingsType', {
+    _id: { type: 'Edm.String', key: true },
+    key: { type: 'Edm.String' },
+    value: { type: 'Edm.String' }
+  })
+
+  store.registerEntitySet('settings', { entityType: 'jsreport.SettingsType' })
+
+  store.registerEntitySet('folders', { entityType: 'jsreport.FolderType', splitIntoDirectories: true })
+}
