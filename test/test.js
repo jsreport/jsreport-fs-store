@@ -408,16 +408,6 @@ describe('provider', () => {
       await store.collection('templates').update({ name: 'test' }, { $set: { recipe: 'foo' } })
       store.provider.queue.push.should.be.called()
     })
-
-    it('find toArray should go to queue', async () => {
-      await store.collection('templates').insert({ name: 'test' })
-      store.provider.queue = { push: sinon.spy() }
-      await store
-        .collection('templates')
-        .find({ name: 'test' })
-        .toArray()
-      store.provider.queue.push.should.be.called()
-    })
   })
 
   describe('syncing', () => {
