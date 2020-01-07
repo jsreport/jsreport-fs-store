@@ -1,3 +1,4 @@
+const Request = require('jsreport-core/lib/render/request')
 const DocumentStore = require('jsreport-core/lib/store/documentStore.js')
 const SchemaValidator = require('jsreport-core/lib/util/schemaValidator')
 const coreStoreTests = require('jsreport-core').tests.documentStore()
@@ -203,6 +204,29 @@ describe('provider', () => {
     })
   })
 
+  describe('transactions', () => {
+    it('should throw when data modified in the meantime', async () => {
+      await store.collection('templates').insert({ name: 'a' })
+      const req1 = Request({})
+      const req2 = Request({})
+      await store.beginTransaction(req1)
+      await store.beginTransaction(req2)
+      await store.collection('templates').update({ name: 'a' }, { $set: { content: 'foo' } }, req1)
+      await store.collection('templates').update({ name: 'a' }, { $set: { content: 'foo2' } }, req2)
+      await store.commitTransaction(req1)
+      return store.commitTransaction(req2).should.be.rejected()
+    })
+
+    it('commit should remove ~~tran ~tran folder', async () => {
+      const req = Request({})
+      await store.beginTransaction(req)
+      await store.collection('templates').insert({ name: 'a' }, req)
+      await store.commitTransaction(req)
+      fs.readdirSync(tmpData).filter(d => d.startsWith('~~.tran')).should.have.length(0)
+      fs.readdirSync(tmpData).filter(d => d.startsWith('~.tran')).should.have.length(0)
+    })
+  })
+
   describe('document properties', () => {
     it('should be persisted into dedicated files', async () => {
       await store.collection('templates').insert({ name: 'test', content: 'foo' })
@@ -377,7 +401,7 @@ describe('provider', () => {
       store.provider.sync.subscribe(e => (notified = e))
       await store.collection('settings').insert({ key: 'a', value: 'b' })
       await store.collection('settings').update({ key: 'a' }, { $set: { value: 'c' } })
-      await store.provider.persistence.compact(store.provider.documents)
+      await store.provider.persistence.compact(store.provider.transaction.getCurrentDocuments())
 
       return Promise.delay(1000).then(() => {
         should(notified).be.null()
@@ -390,23 +414,23 @@ describe('provider', () => {
     beforeEach(() => store.provider.close())
 
     it('insert should go to queue', async () => {
-      store.provider.queue = { push: sinon.mock() }
+      store.provider.transaction = { operation: sinon.mock(), close: () => {} }
       await store.collection('templates').insert({ name: 'test' })
-      store.provider.queue.push.should.be.called()
+      store.provider.transaction.operation.should.be.called()
     })
 
     it('remove should go to queue', async () => {
       await store.collection('templates').insert({ name: 'test' })
-      store.provider.queue = { push: sinon.spy() }
+      store.provider.transaction = { operation: sinon.mock(), close: () => {} }
       await store.collection('templates').remove({ name: 'test' })
-      store.provider.queue.push.should.be.called()
+      store.provider.transaction.operation.should.be.called()
     })
 
     it('update should go to queue', async () => {
       await store.collection('templates').insert({ name: 'test' })
-      store.provider.queue = { push: sinon.spy() }
+      store.provider.transaction = { operation: sinon.mock(), close: () => {} }
       await store.collection('templates').update({ name: 'test' }, { $set: { recipe: 'foo' } })
-      store.provider.queue.push.should.be.called()
+      store.provider.transaction.operation.should.be.called()
     })
   })
 
@@ -681,6 +705,44 @@ describe('load cleanup', () => {
 
   it('should compact flat files on load', () => {
     fs.readFileSync(path.join(__dirname, 'dataToCleanupCopy', 'settings'), 'utf8').should.not.containEql('"value":"1"')
+  })
+})
+
+describe('load cleanup transactions', () => {
+  let store
+
+  beforeEach(async () => {
+    await rimrafAsync(path.join(__dirname, 'tranDataToCleanupCopy'))
+    await ncpAsync(path.join(__dirname, 'tranDataToCleanup'), path.join(__dirname, 'tranDataToCleanupCopy'))
+
+    store = createDefaultStore()
+
+    addCommonTypes(store)
+
+    store.registerProvider(
+      Provider({
+        dataDirectory: path.join(__dirname, 'tranDataToCleanupCopy'),
+        logger: store.options.logger,
+        persistence: { provider: 'fs' },
+        sync: { provider: 'fs' },
+        createError: m => new Error(m)
+      })
+    )
+    await store.init()
+  })
+
+  afterEach(async () => {
+    await rimrafAsync(path.join(__dirname, 'tranDataToCleanupCopy'))
+    return store.provider.close()
+  })
+
+  it('should remove inconsistent transaction', () => {
+    fs.existsSync(path.join(__dirname, 'tranDataToCleanupCopy', '~~.tran')).should.be.false()
+  })
+
+  it('should finish transaction commit and copy from consistent transaction to the root', () => {
+    fs.existsSync(path.join(__dirname, 'tranDataToCleanupCopy', 'b')).should.be.true()
+    fs.existsSync(path.join(__dirname, 'tranDataToCleanupCopy', '~.tran')).should.be.false()
   })
 })
 
