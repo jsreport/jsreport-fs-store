@@ -217,13 +217,13 @@ describe('provider', () => {
       return store.commitTransaction(req2).should.be.rejected()
     })
 
-    it('commit should remove ~~tran ~tran folder', async () => {
+    it('commit should ~tran and .tran', async () => {
       const req = Request({})
       await store.beginTransaction(req)
       await store.collection('templates').insert({ name: 'a' }, req)
       await store.commitTransaction(req)
-      fs.readdirSync(tmpData).filter(d => d.startsWith('~~.tran')).should.have.length(0)
       fs.readdirSync(tmpData).filter(d => d.startsWith('~.tran')).should.have.length(0)
+      fs.readdirSync(tmpData).filter(d => d.startsWith('.tran')).should.have.length(0)
     })
   })
 
@@ -708,12 +708,12 @@ describe('load cleanup', () => {
   })
 })
 
-describe('load cleanup transactions', () => {
+describe('load cleanup consistent transaction', () => {
   let store
 
   beforeEach(async () => {
     await rimrafAsync(path.join(__dirname, 'tranDataToCleanupCopy'))
-    await ncpAsync(path.join(__dirname, 'tranDataToCleanup'), path.join(__dirname, 'tranDataToCleanupCopy'))
+    await ncpAsync(path.join(__dirname, 'tranConsistentDataToCleanup'), path.join(__dirname, 'tranDataToCleanupCopy'))
 
     store = createDefaultStore()
 
@@ -736,13 +736,44 @@ describe('load cleanup transactions', () => {
     return store.provider.close()
   })
 
-  it('should remove inconsistent transaction', () => {
-    fs.existsSync(path.join(__dirname, 'tranDataToCleanupCopy', '~~.tran')).should.be.false()
+  it('should remove ~.tran and .tran and copy ~.tran to root', () => {
+    fs.existsSync(path.join(__dirname, 'tranDataToCleanupCopy', '~.tran')).should.be.false()
+    fs.existsSync(path.join(__dirname, 'tranDataToCleanupCopy', '.tran')).should.be.false()
+    fs.existsSync(path.join(__dirname, 'tranDataToCleanupCopy', 'b')).should.be.true()
+  })
+})
+
+describe('load cleanup inconsistent transaction', () => {
+  let store
+
+  beforeEach(async () => {
+    await rimrafAsync(path.join(__dirname, 'tranDataToCleanupCopy'))
+    await ncpAsync(path.join(__dirname, 'tranInconsistentDataToCleanup'), path.join(__dirname, 'tranDataToCleanupCopy'))
+
+    store = createDefaultStore()
+
+    addCommonTypes(store)
+
+    store.registerProvider(
+      Provider({
+        dataDirectory: path.join(__dirname, 'tranDataToCleanupCopy'),
+        logger: store.options.logger,
+        persistence: { provider: 'fs' },
+        sync: { provider: 'fs' },
+        createError: m => new Error(m)
+      })
+    )
+    await store.init()
   })
 
-  it('should finish transaction commit and copy from consistent transaction to the root', () => {
-    fs.existsSync(path.join(__dirname, 'tranDataToCleanupCopy', 'b')).should.be.true()
+  afterEach(async () => {
+    await rimrafAsync(path.join(__dirname, 'tranDataToCleanupCopy'))
+    return store.provider.close()
+  })
+
+  it('should remove ~.tran and dont copy to root', () => {
     fs.existsSync(path.join(__dirname, 'tranDataToCleanupCopy', '~.tran')).should.be.false()
+    fs.existsSync(path.join(__dirname, 'tranDataToCleanupCopy', 'b')).should.be.false()
   })
 })
 
