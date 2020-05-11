@@ -57,6 +57,7 @@ describe('common core tests', () => {
         logger: store.options.logger,
         persistence: { provider: 'fs' },
         sync: { provider: 'fs' },
+        resolveFileExtension: store.resolveFileExtension,
         createError: m => new Error(m)
       })
     )
@@ -95,6 +96,7 @@ describe('provider', () => {
         sync: { provider: 'fs' },
         persistence: { provider: 'fs' },
         logger: store.options.logger,
+        resolveFileExtension: store.resolveFileExtension,
         createError: m => new Error(m)
       })
     )
@@ -604,6 +606,7 @@ describe('load', () => {
         logger: store.options.logger,
         persistence: { provider: 'fs' },
         sync: { provider: 'fs' },
+        resolveFileExtension: store.resolveFileExtension,
         createError: m => new Error(m)
       })
     )
@@ -677,6 +680,7 @@ describe('load cleanup', () => {
         logger: store.options.logger,
         persistence: { provider: 'fs' },
         sync: { provider: 'fs' },
+        resolveFileExtension: store.resolveFileExtension,
         createError: m => new Error(m)
       })
     )
@@ -725,6 +729,7 @@ describe('load cleanup consistent transaction', () => {
         logger: store.options.logger,
         persistence: { provider: 'fs' },
         sync: { provider: 'fs' },
+        resolveFileExtension: store.resolveFileExtension,
         createError: m => new Error(m)
       })
     )
@@ -760,6 +765,7 @@ describe('load cleanup inconsistent transaction', () => {
         logger: store.options.logger,
         persistence: { provider: 'fs' },
         sync: { provider: 'fs' },
+        resolveFileExtension: store.resolveFileExtension,
         createError: m => new Error(m)
       })
     )
