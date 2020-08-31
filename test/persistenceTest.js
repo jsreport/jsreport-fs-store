@@ -2,6 +2,7 @@ const path = require('path')
 const Persistence = require('../lib/persistence')
 const DocumentModel = require('../lib/documentModel')
 const sinon = require('sinon')
+const { serialize } = require('../lib/customUtils')
 require('should-sinon')
 require('should')
 
@@ -96,9 +97,14 @@ describe('persistence', () => {
   })
 
   it('compact should crash safe approach', async () => {
-    const documents = { reports: [{ name: 'a' }] }
-    await persistence.compact(documents)
-    fs.writeFile.should.be.calledWith('~reports', JSON.stringify({ name: 'a' }) + '\n')
+    fs.readdir.returns(['reports'])
+    fs.stat.returns({
+      isDirectory: () => false,
+      isFile: () => true
+    })
+    fs.readFile.returns(JSON.stringify({ name: 'a' }) + '\n')
+    await persistence.compact({ reports: {} })
+    fs.writeFile.should.be.calledWith('~reports', serialize({ name: 'a', $entitySet: 'reports' }, false) + '\n')
     fs.rename.should.be.calledWith('~reports', 'reports')
   })
 

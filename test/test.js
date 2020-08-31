@@ -589,6 +589,14 @@ describe('provider', () => {
       docs.should.have.length(2)
       docs[1].$$deleted.should.be.true()
     })
+
+    it('compact should use state in files not in memory', async () => {
+      await store.collection('settings').insert({ key: 'a', value: '1' })
+      fs.appendFileSync(path.join(tmpData, 'settings'), JSON.stringify({ key: 'b', value: '2' }))
+      await store.provider.persistence.compact(store.provider.transaction.getCurrentDocuments())
+      const settings = await store.collection('settings').find({})
+      settings.should.have.length(2)
+    })
   })
 })
 
