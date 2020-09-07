@@ -1,7 +1,7 @@
 const Request = require('jsreport-core/lib/render/request')
 const DocumentStore = require('jsreport-core/lib/store/documentStore.js')
 const SchemaValidator = require('jsreport-core/lib/util/schemaValidator')
-const coreStoreTests = require('jsreport-core').tests.documentStore()
+const jsreport = require('jsreport-core')
 const Provider = require('../lib/provider')
 const path = require('path')
 const Promise = require('bluebird')
@@ -39,40 +39,34 @@ function createDefaultStore () {
 }
 
 describe('common core tests', () => {
-  let store
+  let reporter
   const tmpData = path.join(__dirname, 'tmpData')
-  let resolveFileExtension
 
   beforeEach(async () => {
-    resolveFileExtension = () => null
     await rimrafAsync(tmpData)
 
-    store = createDefaultStore()
+    reporter = jsreport({
+      store: { provider: 'fs' }
+    }).use(require('../')({
+      dataDirectory: tmpData
+    })).use(() => {
+      jsreport.tests.documentStore().init(() => reporter.documentStore)
+    })
 
-    coreStoreTests.init(() => store)
+    await reporter.init()
 
-    store.registerProvider(
-      Provider({
-        dataDirectory: tmpData,
-        logger: store.options.logger,
-        persistence: { provider: 'fs' },
-        sync: { provider: 'fs' },
-        resolveFileExtension: store.resolveFileExtension.bind(store),
-        createError: m => new Error(m)
-      })
-    )
-
-    store.addFileExtensionResolver(() => resolveFileExtension())
-
-    await store.init()
+    await jsreport.tests.documentStore().clean(() => reporter.documentStore)
   })
 
   afterEach(async () => {
-    await store.provider.close()
+    if (reporter) {
+      await reporter.close()
+    }
+
     await rimrafAsync(tmpData)
   })
 
-  coreStoreTests(() => store)
+  jsreport.tests.documentStore()(() => reporter.documentStore)
 })
 
 describe('provider', () => {
