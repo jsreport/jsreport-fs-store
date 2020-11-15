@@ -1,6 +1,6 @@
 # jsreport-fs-store
 [![NPM Version](http://img.shields.io/npm/v/jsreport-fs-store.svg?style=flat-square)](https://npmjs.com/package/jsreport-fs-store)
-[![Build Status](https://travis-ci.org/jsreport/jsreport-fs-store.png?branch=master)](https://travis-ci.org/jsreport/jsreport-fs-store)
+[![Build Status](https://travis-ci.com/jsreport/jsreport-fs-store.png?branch=master)](https://travis-ci.com/jsreport/jsreport-fs-store)
 
 **[jsreport](https://github.com/jsreport/jsreport) template store extension. Supports editing templates in the external editors and browsers live reload and preview!**
 
