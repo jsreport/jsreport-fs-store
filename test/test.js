@@ -11,6 +11,7 @@ const sinon = require('sinon')
 Promise.promisifyAll(fs)
 const rimrafAsync = Promise.promisify(require('rimraf'))
 const should = require('should')
+const once = require('lodash.once')
 require('should-sinon')
 
 const AssetType = {
@@ -402,6 +403,23 @@ describe('provider', () => {
       return Promise.delay(1000).then(() => {
         should(notified).be.null()
       })
+    })
+
+    it('should not fire reload for ignored specific files', (done) => {
+      const ignoredFiles = ['fs.lock', '.tran', '.DS_Store']
+      fs.mkdirSync(path.join(tmpData, 'test'))
+
+      const doneOnce = once(done)
+
+      store.provider.sync.subscribe(e => {
+        if (e.filePath === path.join(tmpData, 'test')) {
+          return
+        }
+
+        doneOnce(new Error('shouldnt be called'))
+      })
+      ignoredFiles.forEach((f) => fs.writeFileSync(path.join(tmpData, 'test', f), 'foo'))
+      setTimeout(() => doneOnce(), 1000)
     })
   })
 

@@ -57,6 +57,7 @@
     "jsreport-express": "2.8.0",
     "jsreport-studio-dev": "1.6.0",
     "jsreport-templates": "2.4.0",
+    "lodash.once": "4.1.1",
     "mocha": "6.2.2",
     "ncp": "2.0.0",
     "should": "13.2.3",
