@@ -38,6 +38,7 @@ module.exports = {
             default: {},
             properties: {
               provider: { type: 'string', enum: ['fs'], default: 'fs' },
+              loadConcurrency: { type: 'number', default: 8 },
               lock: {
                 type: 'object',
                 properties: {
