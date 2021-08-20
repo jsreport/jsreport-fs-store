@@ -1,3 +1,6 @@
+**⚠️ This repository has been moved to the monorepo [jsreport/jsreport](https://github.com/jsreport/jsreport)**
+--
+
 # jsreport-fs-store
 [![NPM Version](http://img.shields.io/npm/v/jsreport-fs-store.svg?style=flat-square)](https://npmjs.com/package/jsreport-fs-store)
 [![Build Status](https://travis-ci.com/jsreport/jsreport-fs-store.png?branch=master)](https://travis-ci.com/jsreport/jsreport-fs-store)
